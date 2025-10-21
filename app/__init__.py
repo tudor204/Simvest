@@ -11,5 +11,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
 from app.controllers import (
-    IndexController
+    IndexController,
+    RegisterController,
+    LoginController
 )
