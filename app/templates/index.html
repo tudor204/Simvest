@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- HERO -->
+<section class="bg-gray-900 text-white py-24 relative overflow-hidden">
+  <div class="container mx-auto px-6 flex flex-col-reverse md:flex-row items-center">
+    <div class="md:w-1/2 text-center md:text-left" data-aos="fade-right">
+      <h1 class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight">
+        Aprende a invertir <span class="text-blue-500">sin riesgo</span>
+      </h1>
+      <p class="text-lg text-gray-300 mb-8">
+        Simvest te permite practicar con datos reales del mercado y descubrir cómo invertir de forma inteligente.
+      </p>
+      <a href="/auth/register"
+         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full text-lg transition">
+        Comienza gratis
+      </a>
+    </div>
+    <div class="md:w-1/2 flex justify-center" data-aos="fade-left">
+      <img src="{{ url_for('static', filename='img/mockup_dashboard.png') }}"
+           alt="Simvest dashboard"
+           class="rounded-2xl shadow-2xl w-full md:w-4/5 transform hover:scale-105 transition duration-500" />
+    </div>
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+</section>
+
+<!-- FEATURES -->
+<section class="py-20 bg-white text-gray-800">
+  <div class="container mx-auto px-6">
+    <h2 class="text-4xl font-bold text-center mb-12" data-aos="fade-up">¿Por qué usar Simvest?</h2>
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="100">
+        <img src="{{ url_for('static', filename='img/market.svg') }}" class="w-20 mx-auto mb-4" alt="Mercado real">
+        <h3 class="text-xl font-semibold mb-2">Datos del mercado real</h3>
+        <p class="text-gray-600">Simula inversiones con precios reales de acciones, criptomonedas y fondos.</p>
+      </div>
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="200">
+        <img src="{{ url_for('static', filename='img/education.svg') }}" class="w-20 mx-auto mb-4" alt="Aprendizaje">
+        <h3 class="text-xl font-semibold mb-2">Aprendizaje práctico</h3>
+        <p class="text-gray-600">Aprende estrategias financieras mientras experimentas sin perder dinero.</p>
+      </div>
+      <div class="text-center" data-aos="zoom-in" data-aos-delay="300">
+        <img src="{{ url_for('static', filename='img/dashboard.svg') }}" class="w-20 mx-auto mb-4" alt="Dashboard">
+        <h3 class="text-xl font-semibold mb-2">Panel interactivo</h3>
+        <p class="text-gray-600">Analiza tu portafolio, rendimiento y evolución en tiempo real.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="py-20 bg-gray-100 text-gray-800">
+  <div class="container mx-auto px-6">
+    <h2 class="text-4xl font-bold text-center mb-12" data-aos="fade-up">¿Cómo funciona?</h2>
+    <div class="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
+      <div data-aos="fade-up" data-aos-delay="100">
+        <div class="bg-blue-600 text-white w-12 h-12 flex items-center justify-center rounded-full mx-auto mb-4">1</div>
+        <h3 class="font-semibold text-lg mb-2">Regístrate gratis</h3>
+        <p class="text-gray-600">Crea tu cuenta y recibe 10.000 € virtuales para invertir sin riesgo.</p>
+      </div>
+      <div data-aos="fade-up" data-aos-delay="200">
+        <div class="bg-blue-600 text-white w-12 h-12 flex items-center justify-center rounded-full mx-auto mb-4">2</div>
+        <h3 class="font-semibold text-lg mb-2">Explora el mercado</h3>
+        <p class="text-gray-600">Consulta precios reales y descubre cómo funciona el mundo financiero.</p>
+      </div>
+      <div data-aos="fade-up" data-aos-delay="300">
+        <div class="bg-blue-600 text-white w-12 h-12 flex items-center justify-center rounded-full mx-auto mb-4">3</div>
+        <h3 class="font-semibold text-lg mb-2">Simula y aprende</h3>
+        <p class="text-gray-600">Invierte, observa resultados y aprende a tomar decisiones financieras sólidas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="bg-blue-600 text-white py-24 text-center relative overflow-hidden">
+  <div class="container mx-auto px-6" data-aos="zoom-in">
+    <h2 class="text-4xl md:text-5xl font-bold mb-6">Tu futuro financiero empieza hoy</h2>
+    <p class="text-lg mb-8 text-blue-100">Únete gratis a Simvest y domina el mundo de las inversiones.</p>
+    <a href="/auth/register"
+       class="bg-white text-blue-700 font-semibold py-3 px-8 rounded-full text-lg hover:bg-gray-200 transition">
+       Crear cuenta gratuita
+    </a>
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-t from-blue-700 via-transparent to-transparent"></div>
+</section>
+{% endblock %}
