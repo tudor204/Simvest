@@ -1,69 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <!-- Corregido el charset a UTF-8 y el viewport para mejor compatibilidad móvil -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simvest | Aprende a invertir sin riesgo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <style>
-    /* Asegurar que el padding superior deje espacio para la barra de navegación fija */
-    body {
-        padding-top: 6rem; /* Ajusta según el tamaño de tu navbar */
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    main {
-        flex: 1;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simvest | Aprende a invertir sin riesgo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        /* Asegurar que el padding superior deje espacio para la barra de navegación fija */
+        body {
+            padding-top: 6rem; /* Ajusta según el tamaño de tu navbar */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
 </head>
 
 <body class="font-sans text-gray-900">
 
-<!-- NAVBAR -->
 <header class="bg-white/90 backdrop-blur-sm shadow-md fixed w-full top-0 z-50">
-  <div class="container mx-auto flex justify-between items-center px-6 py-4">
-    <a href="{{ url_for('index') }}" class="text-2xl font-extrabold text-blue-600">Simvest</a>
-    
-    <!-- Lógica de Navegación Condicional -->
-    <nav class="flex items-center space-x-4">
-      
-      {% if current_user.is_authenticated %}
-      <!-- USUARIO AUTENTICADO -->
-      <a href="{{ url_for('home') }}" class="hover:text-blue-600 font-medium transition duration-150">Dashboard</a>
-      <span class="text-gray-600 hidden sm:inline">|</span>
-      <!-- Usar la ruta 'logout' que creamos en el IndexController -->
-      <a href="{{ url_for('logout') }}" 
-         class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
-         Cerrar Sesión
-      </a>
-      
-      {% else %}
-      <!-- USUARIO NO AUTENTICADO (Landing Page) -->
-      <a href="{{ url_for('login') }}" class="hover:text-blue-600 font-medium transition duration-150 hidden sm:inline">
-        Iniciar Sesión
-      </a>
-      <a href="{{ url_for('register') }}"
-         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
-         Registrarse
-      </a>
-      
-      {% endif %}
-    </nav>
-  </div>
+    <div class="container mx-auto flex justify-between items-center px-6 py-4">
+      <a href="{{ url_for('home') }}" class="text-2xl font-extrabold text-blue-600">Simvest</a>
+        
+        <nav class="flex items-center space-x-4">
+            
+            {% if current_user.is_authenticated %}
+            <div class="flex space-x-4 mr-4">
+                <a href="{{ url_for('home') }}" class="hover:text-blue-600 font-medium transition duration-150">Dashboard</a>
+                
+                <a href="{{ url_for('market.market') }}" class="hover:text-blue-600 font-medium transition duration-150">Mercado</a> 
+            </div>
+            
+            <span class="text-gray-600 hidden sm:inline">|</span>
+            <a href="{{ url_for('logout') }}" 
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
+                Cerrar Sesión
+            </a>
+            
+            {% else %}
+            <a href="{{ url_for('login') }}" class="hover:text-blue-600 font-medium transition duration-150 hidden sm:inline">
+                Iniciar Sesión
+            </a>
+            <a href="{{ url_for('register') }}"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
+                Registrarse
+            </a>
+            
+            {% endif %}
+        </nav>
+    </div>
 </header>
 
-<!-- Contenedor de Mensajes Flash -->
 <div class="fixed top-20 left-0 right-0 z-40">
     <div class="container mx-auto px-6">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="space-y-2 max-w-lg mx-auto">
                 {% for category, message in messages %}
-                    {% set style = 'bg-red-100 text-red-700 border-red-400' if category == 'error' else ('bg-green-100 text-green-700 border-green-400' if category == 'success' else 'bg-blue-100 text-blue-700 border-blue-400') %}
+                    {% set style = 'bg-red-100 text-red-700 border-red-400' if category == 'danger' or category == 'error' else ('bg-green-100 text-green-700 border-green-400' if category == 'success' else 'bg-blue-100 text-blue-700 border-blue-400') %}
                     <div class="p-4 text-sm rounded-lg {{ style }} border shadow-lg" role="alert">
                         {{ message }}
                     </div>
@@ -77,8 +75,7 @@
 <main>
     {% block content %}{% endblock %}
 </main>
-  
-<!-- FOOTER -->
+    
 <footer class="bg-gray-900 text-gray-400 py-10 mt-auto">
     <div class="container mx-auto px-6 text-center">
         <p>&copy; 2025 Simvest. Todos los derechos reservados.</p>
@@ -87,10 +84,10 @@
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-  AOS.init({
-    duration: 800,
-    once: true
-  });
+    AOS.init({
+        duration: 800,
+        once: true
+    });
 </script>
 </body>
 </html>
