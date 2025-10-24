@@ -15,9 +15,7 @@
         
         <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-600 hover:shadow-xl transition duration-300">
             <h3 class="text-xl font-semibold text-gray-800 mb-2">Capital Disponible</h3>
-            <p class="text-5xl font-bold text-blue-600 my-4">
-                $ {{ current_capital | default("0.00", true) }}
-            </p>
+            <p class="text-4xl font-extrabold text-blue-600">${{ current_capital }}</p>
             <p class="text-gray-500">Monto total disponible para realizar nuevas inversiones.</p>
         </div>
 
