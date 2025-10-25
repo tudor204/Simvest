@@ -46,15 +46,15 @@ with app.app_context():
 # en cada archivo de controlador)
 
 
-from .controllers.DashboardController import dashboard_bp 
+#from .controllers.DashboardController import dashboard_bp 
 from app.controllers.MarketController import market_bp
-
-
 app.register_blueprint(market_bp)
-app.register_blueprint(dashboard_bp)
+#app.register_blueprint(dashboard_bp)
 
 from app.controllers import (
     IndexController,
     RegisterController,
-    LoginController
+    LoginController,
+    DashboardController
+   
 )
