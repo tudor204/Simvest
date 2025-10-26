@@ -1,13 +1,15 @@
-from flask import render_template
+from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from app.services.market_api import get_current_quote 
-from app import app
 from app.models import Holding
 from datetime import datetime, timedelta
 
-@app.route('/home')
+# --- Definir Blueprint ---
+dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
+
+@dashboard_bp.route('/')
 @login_required
-def home():    
+def dashboard():    
     # Obtener todas las inversiones activas del usuario
     holdings = Holding.query.filter_by(user_id=current_user.id, is_sold=False).all()
 
@@ -44,8 +46,7 @@ def home():
     for i in range(7, 0, -1):  # Últimos 7 días
         day = datetime.now() - timedelta(days=i)
         portfolio_history["labels"].append(day.strftime("%Y-%m-%d"))
-        # Simulación: valor_portafolio +/- pequeñas variaciones
-        simulated_value = valor_portafolio * (1 + (i-4)*0.01)  # simple fluctuación
+        simulated_value = valor_portafolio * (1 + (i - 4) * 0.01)  # simple fluctuación
         portfolio_history["values"].append(round(simulated_value + current_capital, 2))
 
     return render_template(

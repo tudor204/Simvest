@@ -41,20 +41,20 @@ from .models import User # Importamos el modelo User (si es necesario aquí, ej:
 with app.app_context():
     db.create_all()
 
-# Importar y registrar los controladores (Blueprints)
-# (Asumiendo que has definido un Blueprint con el nombre 'index_bp', 'login_bp', etc.,
-# en cada archivo de controlador)
 
 
-#from .controllers.DashboardController import dashboard_bp 
+
 from app.controllers.MarketController import market_bp
 app.register_blueprint(market_bp)
-#app.register_blueprint(dashboard_bp)
+from app.controllers.DashboardController import dashboard_bp
+app.register_blueprint(dashboard_bp)
+
+
 
 from app.controllers import (
     IndexController,
     RegisterController,
-    LoginController,
-    DashboardController
+    LoginController
+    
    
 )

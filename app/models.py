@@ -24,7 +24,7 @@ def load_user(user_id):
     """Función requerida por Flask-Login para cargar un usuario."""
     return db.session.get(User, int(user_id))
 
-# app/models.py (Añadir debajo de la clase User)
+
 
 class Holding(db.Model):
     """Representa un activo simulado poseído por un usuario."""
