@@ -103,7 +103,7 @@
                 <tbody>
                     {% for item in portafolio if not item.is_sold %}
                     <tr class="border-b hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-semibold text-gray-900">{{ item.symbol }}</td>
+                        <td class="px-6 py-4 font-semibold text-gray-900">{{ item.name }}</td>
                         <td class="px-6 py-4">{{ "{:,.2f}".format(item.quantity) }}</td>
                         <td class="px-6 py-4">${{ "{:,.2f}".format(item.purchase_price) }}</td>
                         <td class="px-6 py-4">${{ "{:,.2f}".format(item.current_price) }}</td>

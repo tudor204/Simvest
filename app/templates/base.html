@@ -6,6 +6,9 @@
     <title>Simvest | Aprende a invertir sin riesgo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    {% block styles %}{% endblock %}
+
     <style>
         /* Asegurar que el padding superior deje espacio para la barra de navegación fija */
         body {
@@ -89,5 +92,9 @@
         once: true
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+{% block scripts %}{% endblock %}
+
 </body>
 </html>

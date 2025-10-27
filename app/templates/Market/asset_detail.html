@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<style>
+    .period-btn {
+        @apply px-4 py-2 rounded-lg transition-colors font-medium;
+    }
+    .period-btn.active {
+        @apply bg-blue-600 text-white;
+    }
+    .period-btn:not(.active) {
+        @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+    }
+    .info-card {
+        @apply bg-white p-6 rounded-xl shadow-lg border border-gray-100;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8 p-6">
+    <!-- Header y Navegación -->
+    <div class="mb-6">
+        <a href="{{ url_for('market.market') }}" class="text-blue-600 hover:text-blue-800 font-medium">
+            ← Volver al Mercado
+        </a>
+        <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ asset.name }} ({{ asset.symbol }})</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna Izquierda - Información -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Tarjeta de Información General MEJORADA -->
+<div class="info-card">
+    <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
+    <div class="space-y-3">
+        <div class="flex justify-between">
+            <span class="text-gray-600">Símbolo:</span>
+            <span class="font-mono font-medium">{{ asset.symbol }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-600">Categoría:</span>
+            <span class="font-medium">{{ asset.category }}</span>
+        </div>
+        {% if asset.sector and asset.sector != 'No disponible' %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">Sector:</span>
+            <span class="font-medium">{{ asset.sector }}</span>
+        </div>
+        {% endif %}
+        {% if asset.industry and asset.industry != 'No disponible' %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">Industria:</span>
+            <span class="font-medium">{{ asset.industry }}</span>
+        </div>
+        {% endif %}
+        {% if asset.market_cap and asset.market_cap != 'No disponible' %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">Market Cap:</span>
+            <span class="font-medium">{{ asset.market_cap }}</span>
+        </div>
+        {% endif %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">Precio Actual:</span>
+            <span class="font-bold text-green-600">${{ "%.2f"|format(asset.current_price) }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-gray-600">Cierre Anterior:</span>
+            <span class="font-medium">${{ "%.2f"|format(asset.previous_close) }}</span>
+        </div>
+        
+        <!-- Campos opcionales con verificación -->
+        {% if asset.pe_ratio and asset.pe_ratio != 'No disponible' %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">P/E Ratio:</span>
+            <span class="font-medium">
+                {% if asset.pe_ratio is number %}
+                    {{ "%.2f"|format(asset.pe_ratio) }}
+                {% else %}
+                    {{ asset.pe_ratio }}
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+        
+        {% if asset.dividend_yield and asset.dividend_yield != 'No disponible' %}
+        <div class="flex justify-between">
+            <span class="text-gray-600">Dividend Yield:</span>
+            <span class="font-medium">
+                {% if asset.dividend_yield is number %}
+                    {{ "%.2f"|format(asset.dividend_yield * 100) }}%
+                {% else %}
+                    {{ asset.dividend_yield }}
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+            <!-- Descripción -->
+            <div class="info-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Descripción</h2>
+                <p class="text-gray-700 leading-relaxed">{{ asset.description }}</p>
+            </div>
+
+            <!-- Formulario de Compra Rápida -->
+            <div class="info-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Compra Rápida</h2>
+                <form method="POST" action="{{ url_for('market.market') }}">
+                    <input type="hidden" name="symbol" value="{{ asset.symbol }}">
+                    <div class="mb-4">
+                        <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cantidad
+                        </label>
+                        <input type="number" id="quantity" name="quantity" required min="0.00001" step="any"
+                               class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="0.00">
+                    </div>
+                    <button type="submit" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md">
+                        Comprar {{ asset.symbol }}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Columna Derecha - Gráfico -->
+        <div class="lg:col-span-2">
+            <div class="info-card">
+                <!-- Selector de Periodo -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="period-btn active" data-period="1D">1 Día</button>
+                    <button class="period-btn" data-period="1S">1 Semana</button>
+                    <button class="period-btn" data-period="1M">1 Mes</button>
+                    <button class="period-btn" data-period="6M">6 Meses</button>
+                    <button class="period-btn" data-period="1A">1 Año</button>
+                    <button class="period-btn" data-period="5A">5 Años</button>
+                </div>
+
+                <!-- Contenedor del Gráfico -->
+                <div class="h-96">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const historicalData = {{ historical_data | tojson }};
+        const ctx = document.getElementById('historicalChart').getContext('2d');
+        let currentChart = null;
+
+        // Configuración base del gráfico
+        const chartConfig = {
+            type: 'line',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 },
+                        padding: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            color: '#6B7280'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            color: '#6B7280',
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                }
+            }
+        };
+
+        // Función para renderizar el gráfico
+        function renderChart(period) {
+            const data = historicalData[period];
+            if (!data) {
+                console.error('No hay datos para el periodo:', period);
+                return;
+            }
+
+            // Destruir gráfico anterior
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            // Preparar datos
+            const labels = data.map(item => {
+                const date = new Date(item.time);
+                if (period === '1D') {
+                    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                }
+            });
+
+            const prices = data.map(item => item.price);
+
+            // Crear nuevo gráfico
+            currentChart = new Chart(ctx, {
+                ...chartConfig,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Precio ($)',
+                        data: prices,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }]
+                }
+            });
+        }
+
+        // Event listeners para los botones de periodo
+        document.querySelectorAll('.period-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Actualizar botones activos
+                document.querySelectorAll('.period-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Renderizar gráfico del periodo seleccionado
+                const period = this.getAttribute('data-period');
+                renderChart(period);
+            });
+        });
+
+        // Inicializar con gráfico de 1 día
+        renderChart('1D');
+    });
+</script>
+{% endblock %}

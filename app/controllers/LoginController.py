@@ -7,7 +7,7 @@ from app.models import User, bcrypt # Importar modelo y bcrypt
 def login():
     # Si el usuario ya está logueado, redirige a la página principal
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard.dashboard'))
 
     if request.method == 'POST':
         email = request.form.get('email')
@@ -24,7 +24,7 @@ def login():
             # 4. Redirigir a la página de destino o a 'home'
             next_page = request.args.get('next')
             flash('Sesión iniciada correctamente.', 'success')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            return redirect(next_page) if next_page else redirect(url_for('dashboard.dashboard'))
         else:
             # 5. Mostrar error si las credenciales son inválidas
             flash('Inicio de sesión fallido. Por favor, verifica tu correo y contraseña.', 'error')

@@ -7,7 +7,7 @@ from app.models import db, bcrypt, User # Importar extensiones y modelo
 def register():
     # Si el usuario ya está logueado, redirige a la página principal
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard.dashboard'))
 
     if request.method == 'POST':
         # Obtener datos del formulario
@@ -33,6 +33,6 @@ def register():
         # 4. Loguear al usuario automáticamente
         login_user(user)
         flash(f'¡Cuenta creada con éxito para {username}!', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard.dashboard'))
 
     return render_template('Register/register.html')
