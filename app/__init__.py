@@ -1,6 +1,3 @@
-# app/__init__.py (VERSIÓN CORREGIDA)
-
-import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy  # NECESARIO
@@ -36,34 +33,6 @@ login_manager.init_app(app)
 # ya están definidos e inicializados.
 
 from .models import User # Importamos el modelo User (si es necesario aquí, ej: login_manager)
-
-# Crear las tablas de la base de datos (se usa el objeto db ya inicializado)
-with app.app_context():
-    db.create_all()
-
-def preload_popular_assets():
-    """
-    Precarga datos de activos populares al iniciar la aplicación
-    """
-    popular_symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'META']
-    
-    def preload_task():
-        from app.services.market_api import preload_historical_data
-        import time
-        
-        print("🚀 Precargando datos de activos populares...")
-        for symbol in popular_symbols:
-            try:
-                preload_historical_data(symbol)
-                time.sleep(1)  # Espaciar las peticiones
-            except Exception as e:
-                print(f"⚠️ Error precargando {symbol}: {e}")
-    
-    # Ejecutar en segundo plano después de que la app esté lista
-    import threading
-    thread = threading.Thread(target=preload_task)
-    thread.daemon = True
-    thread.start()
 
 
 from app.controllers.MarketController import market_bp
