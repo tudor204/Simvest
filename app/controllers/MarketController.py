@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app.services.market_api import fetch_live_market_data, get_historical_data
-from app.utils import MARKET_UNIVERSE 
+from app.services.market_api import fetch_live_market_data
+from app.utils.historical_storage import get_historical_data
+from app.utils.utils import MARKET_UNIVERSE 
 from app.models import Holding, db
 from datetime import datetime
 import time

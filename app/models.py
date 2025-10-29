@@ -1,9 +1,6 @@
-# app/models.py (VERSIÓN CORREGIDA Y LIMPIA)
-
 from flask_login import UserMixin 
-from . import db, bcrypt, login_manager # Importa los objetos ya instanciados desde __init__.py
+from . import db, bcrypt, login_manager 
 from datetime import datetime
-# Configurar la vista de login y el mensaje (esto es correcto aquí)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'warning'
 login_manager.login_message = 'Por favor, inicia sesión para acceder a esta página.'
@@ -23,8 +20,6 @@ class User(db.Model, UserMixin):
 def load_user(user_id):
     """Función requerida por Flask-Login para cargar un usuario."""
     return db.session.get(User, int(user_id))
-
-
 
 class Holding(db.Model):
     """Representa un activo simulado poseído por un usuario."""

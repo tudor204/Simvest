@@ -1,10 +1,15 @@
 from dotenv import load_dotenv
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy  # NECESARIO
-from flask_login import LoginManager      # NECESARIO
-from flask_bcrypt import Bcrypt          # NECESARIO
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
 from .config import Config
+from app.utils.historical_storage import load_historical_storage, preload_favorites
+import threading
 
+# =========================================================
+# 0. Cargar variables de entorno
+# =========================================================
 load_dotenv()
 
 # =========================================================
@@ -17,35 +22,33 @@ bcrypt = Bcrypt()
 # =========================================================
 # 2. Inicializar la aplicación y configurar extensiones
 # =========================================================
-# Inicializar la aplicación
 app = Flask(__name__)
-app.config.from_object(Config) # Cargar la configuración
+app.config.from_object(Config)  # Cargar configuración primero
 
-# Inicializar las extensiones con la aplicación
+# Inicializar las extensiones con la app
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
 
 # =========================================================
-# 3. Importar Modelos y Controladores (rompiendo el ciclo)
+# 3. Cargar datos históricos y precargar activos
 # =========================================================
-# *Ahora* es seguro importar el modelo User, ya que db, bcrypt, etc.,
-# ya están definidos e inicializados.
+load_historical_storage()  # Carga el JSON existente en memoria
+threading.Thread(target=preload_favorites, daemon=True).start()  # Precarga en segundo plano
 
-from .models import User # Importamos el modelo User (si es necesario aquí, ej: login_manager)
-
+# =========================================================
+# 4. Importar Modelos y Controladores
+# =========================================================
+from .models import User  # Si se necesita aquí para login_manager
 
 from app.controllers.MarketController import market_bp
 app.register_blueprint(market_bp)
+
 from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
-
-
 
 from app.controllers import (
     IndexController,
     RegisterController,
     LoginController
-    
-   
 )

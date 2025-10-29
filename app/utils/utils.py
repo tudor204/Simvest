@@ -1,0 +1,123 @@
+
+MARKET_UNIVERSE = [
+    # ====================================================================
+    # 1. ACCIONES (20 activos)
+    # ====================================================================
+    {'name': 'Apple Inc.', 'symbol': 'AAPL', 'category': 'acciones'},
+    {'name': 'Microsoft Corp.', 'symbol': 'MSFT', 'category': 'acciones'},
+    {'name': 'Alphabet Inc. (Google) - Class C', 'symbol': 'GOOG', 'category': 'acciones'},
+    {'name': 'Amazon.com, Inc.', 'symbol': 'AMZN', 'category': 'acciones'},
+    {'name': 'Tesla Inc.', 'symbol': 'TSLA', 'category': 'acciones'},
+    {'name': 'NVIDIA Corp.', 'symbol': 'NVDA', 'category': 'acciones'},
+    {'name': 'Meta Platforms Inc. (Facebook)', 'symbol': 'META', 'category': 'acciones'},
+    {'name': 'Johnson & Johnson', 'symbol': 'JNJ', 'category': 'acciones'},
+    {'name': 'JPMorgan Chase & Co.', 'symbol': 'JPM', 'category': 'acciones'},
+    {'name': 'Visa Inc.', 'symbol': 'V', 'category': 'acciones'},
+    {'name': 'Procter & Gamble Co.', 'symbol': 'PG', 'category': 'acciones'},
+    {'name': 'Exxon Mobil Corporation', 'symbol': 'XOM', 'category': 'acciones'},
+    {'name': 'UnitedHealth Group Inc.', 'symbol': 'UNH', 'category': 'acciones'},
+    {'name': 'Home Depot, Inc.', 'symbol': 'HD', 'category': 'acciones'},
+    {'name': 'Coca-Cola Company', 'symbol': 'KO', 'category': 'acciones'},
+    {'name': 'Pfizer Inc.', 'symbol': 'PFE', 'category': 'acciones'},
+    {'name': 'Salesforce, Inc.', 'symbol': 'CRM', 'category': 'acciones'},
+    {'name': 'Netflix, Inc.', 'symbol': 'NFLX', 'category': 'acciones'},
+    {'name': 'Advanced Micro Devices, Inc.', 'symbol': 'AMD', 'category': 'acciones'},
+    {'name': 'Alibaba Group Holding Ltd.', 'symbol': 'BABA', 'category': 'acciones'},
+
+    # ====================================================================
+    # 2. ETFS (20 activos)
+    # ====================================================================
+    {'name': 'Vanguard S&P 500 ETF', 'symbol': 'VOO', 'category': 'etfs'},
+    {'name': 'iShares Core S&P 500 ETF', 'symbol': 'IVV', 'category': 'etfs'},
+    {'name': 'Invesco QQQ Trust (Nasdaq 100)', 'symbol': 'QQQ', 'category': 'etfs'},
+    {'name': 'Vanguard Total Stock Market ETF', 'symbol': 'VTI', 'category': 'etfs'},
+    {'name': 'iShares Russell 2000 ETF (Small Cap)', 'symbol': 'IWM', 'category': 'etfs'},
+    {'name': 'Vanguard FTSE Developed Markets ETF', 'symbol': 'VEA', 'category': 'etfs'},
+    {'name': 'Vanguard FTSE Emerging Markets ETF', 'symbol': 'VWO', 'category': 'etfs'},
+    {'name': 'SPDR Gold Shares', 'symbol': 'GLD', 'category': 'etfs'},
+    {'name': 'Energy Select Sector SPDR Fund', 'symbol': 'XLE', 'category': 'etfs'},
+    {'name': 'Financial Select Sector SPDR Fund', 'symbol': 'XLF', 'category': 'etfs'},
+    {'name': 'Health Care Select Sector SPDR Fund', 'symbol': 'XLV', 'category': 'etfs'},
+    {'name': 'iShares Core U.S. Aggregate Bond ETF', 'symbol': 'AGG', 'category': 'etfs'},
+    {'name': 'ARK Innovation ETF', 'symbol': 'ARKK', 'category': 'etfs'},
+    {'name': 'Global X Uranium ETF', 'symbol': 'URA', 'category': 'etfs'},
+    {'name': 'iShares Global Clean Energy ETF', 'symbol': 'ICLN', 'category': 'etfs'},
+    {'name': 'The Real Estate Select Sector SPDR Fund', 'symbol': 'XLRE', 'category': 'etfs'},
+    {'name': 'First Trust NYSE Arca Biotechnology ETF', 'symbol': 'FBT', 'category': 'etfs'},
+    {'name': 'iShares MSCI EAFE ETF', 'symbol': 'EFA', 'category': 'etfs'},
+    {'name': 'Vanguard Mid-Cap ETF', 'symbol': 'VO', 'category': 'etfs'},
+    {'name': 'SPDR S&P Dividend ETF', 'symbol': 'SDY', 'category': 'etfs'},
+
+    # ====================================================================
+    # 3. FONDOS DE INVERSIÓN (20 activos)
+    # ====================================================================
+    {'name': 'Fidelity 500 Index Fund', 'symbol': 'FXAIX', 'category': 'fondos'},
+    {'name': 'Vanguard Total Stock Market Index Fund Admiral Shares', 'symbol': 'VTSAX', 'category': 'fondos'},
+    {'name': 'Fidelity NASDAQ Composite Index Fund', 'symbol': 'FNCMX', 'category': 'fondos'},
+    {'name': 'Vanguard Total International Stock Index Fund Admiral Shares', 'symbol': 'VTIAX', 'category': 'fondos'},
+    {'name': 'Fidelity International Index Fund', 'symbol': 'FSPSX', 'category': 'fondos'},
+    {'name': 'Vanguard Total Bond Market Index Fund Admiral Shares', 'symbol': 'VBTLX', 'category': 'fondos'},
+    {'name': 'Fidelity Mid Cap Index Fund', 'symbol': 'FSMDX', 'category': 'fondos'},
+    {'name': 'Vanguard Real Estate Index Fund Admiral Shares', 'symbol': 'VGSIX', 'category': 'fondos'},
+    {'name': 'Fidelity Contrafund', 'symbol': 'FCNTX', 'category': 'fondos'},
+    {'name': 'Vanguard Growth Index Fund Admiral Shares', 'symbol': 'VIGAX', 'category': 'fondos'},
+    {'name': 'Fidelity Small Cap Index Fund', 'symbol': 'FSSNX', 'category': 'fondos'},
+    {'name': 'Vanguard High-Yield Corporate Fund Investor Shares', 'symbol': 'VWEAX', 'category': 'fondos'},
+    {'name': 'Fidelity Technology Fund', 'symbol': 'FSELX', 'category': 'fondos'},
+    {'name': 'Vanguard European Stock Index Fund Admiral Shares', 'symbol': 'VEUSX', 'category': 'fondos'},
+    {'name': 'Fidelity Health Care Fund', 'symbol': 'FHLC', 'category': 'fondos'},
+    {'name': 'Vanguard Dividend Growth Fund', 'symbol': 'VDIGX', 'category': 'fondos'},
+    {'name': 'Fidelity U.S. Bond Index Fund', 'symbol': 'FXNAX', 'category': 'fondos'},
+    {'name': 'Vanguard Developed Markets Index Fund Admiral Shares', 'symbol': 'VTMGX', 'category': 'fondos'},
+    {'name': 'Fidelity Total International Bond Fund', 'symbol': 'FTIEX', 'category': 'fondos'},
+    {'name': 'Vanguard Target Retirement 2050 Fund', 'symbol': 'VFIFX', 'category': 'fondos'},
+
+    # ====================================================================
+    # 4. RENTA FIJA / BONOS (20 activos)
+    # ====================================================================
+    {'name': 'iShares 20+ Year Treasury Bond ETF', 'symbol': 'TLT', 'category': 'renta-fija'},
+    {'name': 'Vanguard Total Bond Market ETF', 'symbol': 'BND', 'category': 'renta-fija'},
+    {'name': 'iShares iBoxx $ Inv Grade Corp Bd ETF', 'symbol': 'LQD', 'category': 'renta-fija'},
+    {'name': 'SPDR Bloomberg High Yield Bond ETF', 'symbol': 'JNK', 'category': 'renta-fija'},
+    {'name': 'iShares Short-Term Treasury Bond ETF', 'symbol': 'SHV', 'category': 'renta-fija'},
+    {'name': 'Vanguard Short-Term Bond ETF', 'symbol': 'BSV', 'category': 'renta-fija'},
+    {'name': 'iShares National Muni Bond ETF', 'symbol': 'MUB', 'category': 'renta-fija'},
+    {'name': 'Vanguard Intermediate-Term Bond ETF', 'symbol': 'BIV', 'category': 'renta-fija'},
+    {'name': 'SPDR Portfolio Intermediate Term Corp Bond ETF', 'symbol': 'SPIB', 'category': 'renta-fija'},
+    {'name': 'PIMCO Enhanced Low Duration Active ETF', 'symbol': 'LDUR', 'category': 'renta-fija'},
+    {'name': 'iShares 7-10 Year Treasury Bond ETF', 'symbol': 'IEF', 'category': 'renta-fija'},
+    {'name': 'Vanguard Mortgage-Backed Securities ETF', 'symbol': 'VMBS', 'category': 'renta-fija'},
+    {'name': 'iShares J.P. Morgan USD Emerging Markets Bond ETF', 'symbol': 'EMB', 'category': 'renta-fija'},
+    {'name': 'iShares Global Corporate Bond ETF', 'symbol': 'BNDX', 'category': 'renta-fija'},
+    {'name': 'SPDR TIPS ETF', 'symbol': 'TIPS', 'category': 'renta-fija'},
+    {'name': 'iShares Inflation Protected Bond ETF', 'symbol': 'TIP', 'category': 'renta-fija'},
+    {'name': 'Vanguard Total International Bond ETF', 'symbol': 'BNDX', 'category': 'renta-fija'},
+    {'name': 'VanEck Vectors Fallen Angel High Yield Bond ETF', 'symbol': 'ANGL', 'category': 'renta-fija'},
+    {'name': 'Invesco Preferred ETF', 'symbol': 'PGX', 'category': 'renta-fija'},
+    {'name': 'iShares AAA - AA Rated Corporate Bond ETF', 'symbol': 'QLTA', 'category': 'renta-fija'},
+
+    # ====================================================================
+    # 5. CRIPTOMONEDAS (20 activos)
+    # ====================================================================
+    {'name': 'Bitcoin', 'symbol': 'BTC-USD', 'category': 'crypto'},
+    {'name': 'Ethereum', 'symbol': 'ETH-USD', 'category': 'crypto'},
+    {'name': 'Solana', 'symbol': 'SOL-USD', 'category': 'crypto'},
+    {'name': 'Ripple', 'symbol': 'XRP-USD', 'category': 'crypto'},
+    {'name': 'Dogecoin', 'symbol': 'DOGE-USD', 'category': 'crypto'},
+    {'name': 'Cardano', 'symbol': 'ADA-USD', 'category': 'crypto'},
+    {'name': 'Avalanche', 'symbol': 'AVAX-USD', 'category': 'crypto'},
+    {'name': 'Polkadot', 'symbol': 'DOT-USD', 'category': 'crypto'},
+    {'name': 'Polygon', 'symbol': 'MATIC-USD', 'category': 'crypto'},
+    {'name': 'Shiba Inu', 'symbol': 'SHIB-USD', 'category': 'crypto'},
+    {'name': 'Chainlink', 'symbol': 'LINK-USD', 'category': 'crypto'},
+    {'name': 'Litecoin', 'symbol': 'LTC-USD', 'category': 'crypto'},
+    {'name': 'Bitcoin Cash', 'symbol': 'BCH-USD', 'category': 'crypto'},
+    {'name': 'Uniswap', 'symbol': 'UNI-USD', 'category': 'crypto'},
+    {'name': 'Ethereum Classic', 'symbol': 'ETC-USD', 'category': 'crypto'},
+    {'name': 'Stellar', 'symbol': 'XLM-USD', 'category': 'crypto'},
+    {'name': 'Cosmos', 'symbol': 'ATOM-USD', 'category': 'crypto'},
+    {'name': 'Monero', 'symbol': 'XMR-USD', 'category': 'crypto'},
+    {'name': 'TRON', 'symbol': 'TRX-USD', 'category': 'crypto'},
+    {'name': 'NEAR Protocol', 'symbol': 'NEAR-USD', 'category': 'crypto'},
+]
+
