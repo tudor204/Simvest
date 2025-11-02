@@ -30,73 +30,47 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Columna Izquierda - Información -->
         <div class="lg:col-span-1 space-y-6">
-            <!-- Tarjeta de Información General MEJORADA -->
-<div class="info-card">
-    <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
-    <div class="space-y-3">
-        <div class="flex justify-between">
-            <span class="text-gray-600">Símbolo:</span>
-            <span class="font-mono font-medium">{{ asset.symbol }}</span>
-        </div>
-        <div class="flex justify-between">
-            <span class="text-gray-600">Categoría:</span>
-            <span class="font-medium">{{ asset.category }}</span>
-        </div>
-        {% if asset.sector and asset.sector != 'No disponible' %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">Sector:</span>
-            <span class="font-medium">{{ asset.sector }}</span>
-        </div>
-        {% endif %}
-        {% if asset.industry and asset.industry != 'No disponible' %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">Industria:</span>
-            <span class="font-medium">{{ asset.industry }}</span>
-        </div>
-        {% endif %}
-        {% if asset.market_cap and asset.market_cap != 'No disponible' %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">Market Cap:</span>
-            <span class="font-medium">{{ asset.market_cap }}</span>
-        </div>
-        {% endif %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">Precio Actual:</span>
-            <span class="font-bold text-green-600">${{ "%.2f"|format(asset.current_price) }}</span>
-        </div>
-        <div class="flex justify-between">
-            <span class="text-gray-600">Cierre Anterior:</span>
-            <span class="font-medium">${{ "%.2f"|format(asset.previous_close) }}</span>
-        </div>
-        
-        <!-- Campos opcionales con verificación -->
-        {% if asset.pe_ratio and asset.pe_ratio != 'No disponible' %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">P/E Ratio:</span>
-            <span class="font-medium">
-                {% if asset.pe_ratio is number %}
-                    {{ "%.2f"|format(asset.pe_ratio) }}
-                {% else %}
-                    {{ asset.pe_ratio }}
-                {% endif %}
-            </span>
-        </div>
-        {% endif %}
-        
-        {% if asset.dividend_yield and asset.dividend_yield != 'No disponible' %}
-        <div class="flex justify-between">
-            <span class="text-gray-600">Dividend Yield:</span>
-            <span class="font-medium">
-                {% if asset.dividend_yield is number %}
-                    {{ "%.2f"|format(asset.dividend_yield * 100) }}%
-                {% else %}
-                    {{ asset.dividend_yield }}
-                {% endif %}
-            </span>
-        </div>
-        {% endif %}
-    </div>
-</div>
+            <!-- Tarjeta de Información General -->
+            <div class="info-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Símbolo:</span>
+                        <span class="font-mono font-medium">{{ asset.symbol }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Categoría:</span>
+                        <span class="font-medium">{{ asset.category }}</span>
+                    </div>
+                    {% if asset.sector and asset.sector != 'No disponible' %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Sector:</span>
+                        <span class="font-medium">{{ asset.sector }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.industry and asset.industry != 'No disponible' %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Industria:</span>
+                        <span class="font-medium">{{ asset.industry }}</span>
+                    </div>
+                    {% endif %}
+                    {% if asset.market_cap and asset.market_cap != 'No disponible' %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Market Cap:</span>
+                        <span class="font-medium">{{ asset.market_cap }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Precio Actual:</span>
+                        <span class="font-bold text-green-600">${{ "%.2f"|format(asset.current_price) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Cierre Anterior:</span>
+                        <span class="font-medium">${{ "%.2f"|format(asset.previous_close) }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Descripción -->
             <div class="info-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Descripción</h2>
@@ -150,121 +124,91 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const historicalData = {{ historical_data | tojson }};
-        const ctx = document.getElementById('historicalChart').getContext('2d');
-        let currentChart = null;
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('historicalChart').getContext('2d');
+    let currentChart = null;
 
-        // Configuración base del gráfico
-        const chartConfig = {
-            type: 'line',
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 },
-                        padding: 10
+    const chartConfig = {
+        type: 'line',
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { size: 14 },
+                    bodyFont: { size: 13 },
+                    padding: 10
+                }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(0,0,0,0.1)' }, ticks: { color: '#6B7280' } },
+                y: { 
+                    grid: { color: 'rgba(0,0,0,0.1)' }, 
+                    ticks: {
+                        color: '#6B7280',
+                        callback: function(value) { return '$' + value.toFixed(2); }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        ticks: {
-                            color: '#6B7280'
-                        }
-                    },
-                    y: {
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)'
-                        },
-                        ticks: {
-                            color: '#6B7280',
-                            callback: function(value) {
-                                return '$' + value.toFixed(2);
-                            }
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
                 }
-            }
-        };
-
-        // Función para renderizar el gráfico
-        function renderChart(period) {
-            const data = historicalData[period];
-            if (!data) {
-                console.error('No hay datos para el periodo:', period);
-                return;
-            }
-
-            // Destruir gráfico anterior
-            if (currentChart) {
-                currentChart.destroy();
-            }
-
-            // Preparar datos
-            const labels = data.map(item => {
-                const date = new Date(item.time);
-                if (period === '1D') {
-                    return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                } else {
-                    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-                }
-            });
-
-            const prices = data.map(item => item.price);
-
-            // Crear nuevo gráfico
-            currentChart = new Chart(ctx, {
-                ...chartConfig,
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Precio ($)',
-                        data: prices,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 4
-                    }]
-                }
-            });
+            },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false }
         }
+    };
 
-        // Event listeners para los botones de periodo
-        document.querySelectorAll('.period-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                // Actualizar botones activos
-                document.querySelectorAll('.period-btn').forEach(btn => {
-                    btn.classList.remove('active');
+    function renderChart(period) {
+        fetch(`/market/asset/{{ asset.symbol }}/history/${period}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.error) {
+                    console.error('No se pudieron cargar los datos:', data?.error);
+                    return;
+                }
+
+                const labels = data.map(item => {
+                    const date = new Date(item.time);
+                    return period === '1D'
+                        ? date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                        : date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
                 });
-                this.classList.add('active');
+                const prices = data.map(item => item.price);
 
-                // Renderizar gráfico del periodo seleccionado
-                const period = this.getAttribute('data-period');
-                renderChart(period);
-            });
+                if (currentChart) currentChart.destroy();
+
+                currentChart = new Chart(ctx, {
+                    ...chartConfig,
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Precio ($)',
+                            data: prices,
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37,99,235,0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }]
+                    }
+                });
+            })
+            .catch(err => console.error('Error cargando datos históricos:', err));
+    }
+
+    // Botones de periodo
+    document.querySelectorAll('.period-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            renderChart(this.getAttribute('data-period'));
         });
-
-        // Inicializar con gráfico de 1 día
-        renderChart('1D');
     });
+
+    // Inicializar con 1 día
+    renderChart('1D');
+});
 </script>
 {% endblock %}

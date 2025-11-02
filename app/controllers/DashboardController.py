@@ -1,8 +1,6 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-# 💡 IMPORTACIÓN CORREGIDA: Asumiendo que has movido get_market_data a services
-# Si la dejaste en un blueprint, ajusta la importación (ej: from ..market.market_bp import get_market_data)
-from app.services.market_api import fetch_live_market_data
+from app.market_service import fetch_live_market_data, fetch_historical_data
 from app.models import Holding
 from datetime import datetime, timedelta
 
@@ -15,36 +13,27 @@ def dashboard():
     # Obtener todas las inversiones activas del usuario
     holdings = Holding.query.filter_by(user_id=current_user.id, is_sold=False).all()
 
-    # 1. OBTENER TODOS LOS DATOS DEL MERCADO UNA SOLA VEZ
-    # get_market_data() devuelve una lista (ignorada) y un diccionario (products_dict)
+    # Obtener datos del mercado en vivo
     try:
         _, products_dict = fetch_live_market_data() 
     except Exception as e:
-        # En caso de fallo de la API (rate limit, etc.), usamos un diccionario vacío
         print(f"ERROR: Fallo al obtener datos del mercado: {e}")
         products_dict = {}
 
     valor_portafolio = 0
     portafolio_data = []
 
+    # --- Paso 1: calcular valores actuales y portafolio_data ---
     for h in holdings:
         symbol = h.symbol
-        
-        # 2. BUSCAR EL PRECIO EN EL DICCIONARIO
-        # Usamos .get() para obtener la información de mercado del símbolo.
         market_info = products_dict.get(symbol, {})
-        
-        # 3. EXTRAER EL PRECIO con FALLBACK
-        # Si el símbolo no se encuentra en el diccionario, usamos el precio de compra como fallback.
-        current_price = market_info.get('price', h.purchase_price) 
-        
-        # Asegurarse que el precio es float
+        current_price = market_info.get('price', h.purchase_price)
+
         try:
             current_price = float(current_price)
         except (TypeError, ValueError):
-            current_price = h.purchase_price # Fallback final si la conversión falla
+            current_price = h.purchase_price
 
-        # --- Cálculos de Portafolio ---
         gain_loss = (current_price - h.purchase_price) * h.quantity
         percent_change = ((current_price - h.purchase_price) / h.purchase_price) * 100 if h.purchase_price > 0 else 0
 
@@ -53,8 +42,7 @@ def dashboard():
         portafolio_data.append({
             'id': h.id,
             'symbol': h.symbol,
-            # Asegúrate de obtener el nombre también si es posible, si no usa el que está guardado
-            'name': market_info.get('name', h.name), 
+            'name': market_info.get('name', h.name),
             'quantity': h.quantity,
             'purchase_price': h.purchase_price,
             'current_price': current_price,
@@ -66,16 +54,30 @@ def dashboard():
     current_capital = float(current_user.capital)
     total_capital = current_capital + valor_portafolio
 
-    # Generar histórico simulado del portafolio para el gráfico
-    portfolio_history = {
-        "labels": [],
-        "values": []
-    }
-    for i in range(7, 0, -1):
-        day = datetime.now() - timedelta(days=i)
-        portfolio_history["labels"].append(day.strftime("%Y-%m-%d"))
-        simulated_value = valor_portafolio * (1 + (i - 4) * 0.01)  
-        portfolio_history["values"].append(round(simulated_value + current_capital, 2))
+    # --- Paso 2: obtener valores históricos de los activos ---
+    num_days = 7
+    portfolio_daily_values = {}  # {symbol: [valor_por_dia,...]}
+
+    for h in holdings:
+        historical_prices = fetch_historical_data(h.symbol, '1S')  # Última semana
+        if not historical_prices or len(historical_prices) < num_days:
+            # fallback: usamos precio actual
+            portfolio_daily_values[h.symbol] = [h.current_price * h.quantity] * num_days
+        else:
+            # Tomamos solo los últimos `num_days` precios de cierre
+            prices = [p['price'] for p in historical_prices[-num_days:]]
+            portfolio_daily_values[h.symbol] = [p * h.quantity for p in prices]
+
+    # --- Paso 3: combinar valores diarios para el gráfico ---
+    portfolio_history = {"labels": [], "values": []}
+    for i in range(num_days):
+        day_label = (datetime.now() - timedelta(days=num_days - i)).strftime("%Y-%m-%d")
+        portfolio_history["labels"].append(day_label)
+
+        total_value = current_capital
+        for values in portfolio_daily_values.values():
+            total_value += values[i]
+        portfolio_history["values"].append(round(total_value, 2))
 
     return render_template(
         'Dashboard/dashboard.html',

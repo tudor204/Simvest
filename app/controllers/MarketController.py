@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app.services.market_api import fetch_live_market_data
-from app.utils.historical_storage import get_historical_data
+from app.market_service import fetch_live_market_data, fetch_historical_data  # ✅ Nuevo import
 from app.utils.utils import MARKET_UNIVERSE 
 from app.models import Holding, db
 from datetime import datetime
@@ -21,7 +20,7 @@ def market():
             flash(f'Error al obtener datos del mercado para la compra: {e}', 'danger')
             return redirect(url_for('market.market'))
 
-        symbol = request.form.get('symbol').upper()
+        symbol = request.form.get('symbol', '').upper()
         
         try:
             quantity = float(request.form.get('quantity'))
@@ -67,6 +66,9 @@ def market():
 @market_bp.route('/data/live', methods=['GET'])
 @login_required
 def get_live_market_data():
+    """
+    Devuelve datos de mercado en vivo (lista simplificada para el frontend)
+    """
     try:
         products_list, _ = fetch_live_market_data()
         
@@ -87,51 +89,24 @@ def get_live_market_data():
         print(f"Error en la ruta /data/live: {e}")
         return jsonify({"error": "No se pudieron cargar los datos de cotización."}), 500
 
+
 @market_bp.route('/asset/<string:symbol>')
 @login_required
 def asset_detail(symbol):
     """
-    Página de detalles históricos de un activo específico
+    Página de detalles de un activo específico
+    (solo carga información general, los históricos se piden aparte vía AJAX)
     """
     try:
         # Buscar el activo en el universo de mercado
-        asset_info = None
-        for asset in MARKET_UNIVERSE:
-            if asset['symbol'] == symbol:
-                asset_info = asset
-                break
-        
+        asset_info = next((a for a in MARKET_UNIVERSE if a['symbol'] == symbol), None)
         if not asset_info:
             flash(f'Activo {symbol} no encontrado.', 'danger')
             return redirect(url_for('market.market'))
 
-        # Obtener datos históricos extensos para el gráfico detallado
         ticker = yf.Ticker(symbol)
-        
-        # Datos para diferentes periodos
-        historical_data = {
-            '1D': ticker.history(period='1d', interval='5m'),
-            '1S': ticker.history(period='5d', interval='1h'),
-            '1M': ticker.history(period='1mo', interval='1d'),
-            '6M': ticker.history(period='6mo', interval='1d'),
-            '1A': ticker.history(period='1y', interval='1d'),
-            '5A': ticker.history(period='5y', interval='1wk')
-        }
-        
-        # Procesar datos para cada periodo
-        processed_data = {}
-        for period, data in historical_data.items():
-            if not data.empty:
-                processed_data[period] = [
-                    {
-                        'time': index.strftime('%Y-%m-%d %H:%M:%S'),
-                        'price': float(row['Close'])
-                    }
-                    for index, row in data.iterrows()
-                ]
-        
-        # Información general del activo
         info = ticker.info
+
         asset_details = {
             'name': asset_info['name'],
             'symbol': symbol,
@@ -143,27 +118,28 @@ def asset_detail(symbol):
             'previous_close': info.get('previousClose', 0)
         }
         
-        return render_template(
-            'Market/asset_detail.html',
-            asset=asset_details,
-            historical_data=processed_data
-        )
+        # 👇 Ya no descargamos todos los periodos aquí, eso se pide con /history/<period>
+        return render_template('Market/asset_detail.html', asset=asset_details)
         
     except Exception as e:
         flash(f'Error al cargar datos para {symbol}: {str(e)}', 'danger')
         return redirect(url_for('market.market'))
 
+
 @market_bp.route('/asset/<string:symbol>/history/<string:period>')
 @login_required
 def load_asset_historical_data(symbol, period):
+    """
+    Carga dinámica de datos históricos (solo al hacer clic en un periodo o activo)
+    """
     try:
         start_time = time.time()
-        data = get_historical_data(symbol, period)
+        data = fetch_historical_data(symbol, period)  # ✅ Nueva función desde market_service.py
         load_time = time.time() - start_time
         
         print(f"📊 Datos {period} para {symbol} cargados en {load_time:.2f}s")
         
-        if data is not None:
+        if data:
             return jsonify(data)
         else:
             return jsonify({'error': 'No se pudieron cargar los datos históricos'}), 500
@@ -171,6 +147,7 @@ def load_asset_historical_data(symbol, period):
     except Exception as e:
         print(f"❌ Error cargando datos históricos para {symbol} ({period}): {e}")
         return jsonify({'error': str(e)}), 500
+
 
 @market_bp.route('/sell', methods=['POST'])
 @login_required

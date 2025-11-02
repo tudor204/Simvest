@@ -4,8 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from .config import Config
-from app.utils.historical_storage import load_historical_storage, preload_favorites
-import threading
+
 
 # =========================================================
 # 0. Cargar variables de entorno
@@ -13,42 +12,34 @@ import threading
 load_dotenv()
 
 # =========================================================
-# 1. Instanciar/Definir las extensiones globalmente
+# 1. Instanciar extensiones
 # =========================================================
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 
 # =========================================================
-# 2. Inicializar la aplicación y configurar extensiones
+# 2. Inicializar la app
 # =========================================================
 app = Flask(__name__)
-app.config.from_object(Config)  # Cargar configuración primero
+app.config.from_object(Config)
 
-# Inicializar las extensiones con la app
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
 
 # =========================================================
-# 3. Cargar datos históricos y precargar activos
+# 3. Importar modelos
 # =========================================================
-load_historical_storage()  # Carga el JSON existente en memoria
-threading.Thread(target=preload_favorites, daemon=True).start()  # Precarga en segundo plano
+from app.models import User  # CORRECTO, evita import circular
 
 # =========================================================
-# 4. Importar Modelos y Controladores
+# 4. Registrar blueprints
 # =========================================================
-from .models import User  # Si se necesita aquí para login_manager
-
 from app.controllers.MarketController import market_bp
 app.register_blueprint(market_bp)
 
 from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
 
-from app.controllers import (
-    IndexController,
-    RegisterController,
-    LoginController
-)
+from app.controllers import IndexController, RegisterController, LoginController
