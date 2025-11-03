@@ -8,6 +8,46 @@ from app.utils.utils import MARKET_UNIVERSE
 market_cache = {"list": [], "dict": {}, "timestamp": 0}
 CACHE_DURATION = 600  # segundos = 10 min
 
+def safe_get(info, keys, default=None):
+    """Obtiene valor de forma segura probando múltiples keys"""
+    for key in keys:
+        if key in info and info[key] is not None:
+            return info[key]
+    return default
+
+def get_asset_price_and_change(ticker, symbol):
+    """Obtiene precio y cambio de forma robusta para cualquier tipo de activo"""
+    try:
+        info = ticker.info
+        hist_data = ticker.history(period="2d", interval="1d")
+        
+        # Múltiples formas de obtener el precio actual
+        current_price = safe_get(info, ['currentPrice', 'regularMarketPrice', 'navPrice'])
+        
+        # Si no hay precio en info, usar historical data
+        if not current_price and not hist_data.empty:
+            current_price = hist_data['Close'].iloc[-1]
+        
+        # Múltiples formas de obtener previous close
+        previous_close = safe_get(info, ['previousClose', 'regularMarketPreviousClose'])
+        if not previous_close and len(hist_data) > 1:
+            previous_close = hist_data['Close'].iloc[-2]
+        elif not previous_close:
+            previous_close = current_price
+            
+        # Calcular cambio porcentual
+        if current_price and previous_close and previous_close > 0:
+            change_pct = ((current_price - previous_close) / previous_close * 100)
+            change_str = f"+{change_pct:.2f}%" if change_pct >= 0 else f"{change_pct:.2f}%"
+        else:
+            change_str = "0.00%"
+            
+        return current_price or 0.0, change_str, hist_data
+        
+    except Exception as e:
+        print(f"Error obteniendo precio para {symbol}: {e}")
+        return 0.0, "0.00%", None
+
 def fetch_live_market_data():
     """Obtiene datos en vivo de todos los activos con caché."""
     global market_cache
@@ -15,54 +55,76 @@ def fetch_live_market_data():
     if now - market_cache["timestamp"] < CACHE_DURATION:
         return market_cache["list"], market_cache["dict"]
 
-    symbols = [a['symbol'] for a in MARKET_UNIVERSE]
-    try:
-        ticker_data = yf.Tickers(' '.join(symbols))
-        hist_data = yf.download(symbols, period='7d', interval='1h', progress=False)
-    except Exception as e:
-        print(f"⚠️ Error al descargar datos de mercado: {e}")
-        return market_cache["list"], market_cache["dict"]
-
     products_list, products_dict = [], {}
-    for asset in MARKET_UNIVERSE:
-        symbol = asset['symbol']
+    
+    # Procesar activos en lotes más pequeños para evitar timeouts
+    batch_size = 20
+    for i in range(0, len(MARKET_UNIVERSE), batch_size):
+        batch = MARKET_UNIVERSE[i:i + batch_size]
+        
         try:
-            data = ticker_data.tickers[symbol]
-            info = data.fast_info or {}
-            price = info.get('lastPrice') or data.info.get('regularMarketPrice')
-            prev_close = info.get('previousClose') or data.info.get('regularMarketPreviousClose')
-            if not price or not prev_close:
-                hist = data.history(period="2d", interval="1h")
-                price = hist['Close'].iloc[-1] if not hist.empty else 0.0
-                prev_close = hist['Close'].iloc[-2] if len(hist) > 1 else price
-            change_pct = ((price - prev_close) / prev_close * 100) if prev_close else 0
-            change_str = f"+{change_pct:.2f}%" if change_pct >= 0 else f"{change_pct:.2f}%"
+            # Descargar datos del batch actual
+            symbols = [a['symbol'] for a in batch]
+            ticker_data = yf.Tickers(' '.join(symbols))
+            
+            for asset in batch:
+                symbol = asset['symbol']
+                try:
+                    ticker = ticker_data.tickers[symbol]
+                    
+                    # Obtener precio y cambio
+                    price, change_str, hist_data = get_asset_price_and_change(ticker, symbol)
+                    
+                    # Obtener mini histórico
+                    history = []
+                    if hist_data is not None and not hist_data.empty:
+                        history = hist_data['Close'].tail(10).tolist()
+                    else:
+                        history = [price] if price else [0.0]
+                    
+                    # Construir producto con campos adaptados
+                    product = {
+                        "name": asset["name"],
+                        "symbol": symbol,
+                        "category": asset["category"],
+                        "price": round(price, 4),
+                        "change": change_str,
+                        "history": history,
+                    }
 
-            # Mini histórico
-            if symbol in hist_data['Close']:
-                history = hist_data['Close'][symbol].dropna().tail(40).tolist()
-            else:
-                history = [price]
+                    products_list.append(product)
+                    products_dict[symbol] = product
 
-            product = {
-                "name": asset["name"],
-                "symbol": symbol,
-                "category": asset["category"],
-                "price": round(price, 4),
-                "change": change_str,
-                "history": history,
-            }
-
-            products_list.append(product)
-            products_dict[symbol] = product
-
+                except Exception as e:
+                    print(f"❌ Error procesando {symbol}: {e}")
+                    fallback = {
+                        "name": asset["name"],
+                        "symbol": symbol, 
+                        "category": asset["category"],
+                        "price": 0.0, 
+                        "change": "Error", 
+                        "history": [0.0]
+                    }
+                    products_list.append(fallback)
+                    products_dict[symbol] = fallback
+                    
         except Exception as e:
-            print(f"❌ Error procesando {symbol}: {e}")
-            fallback = {**asset, "price": 0.0, "change": "Error", "history": [0.0]}
-            products_list.append(fallback)
-            products_dict[symbol] = fallback
+            print(f"❌ Error en batch {i}: {e}")
+            # Agregar fallbacks para todo el batch
+            for asset in batch:
+                fallback = {
+                    "name": asset["name"],
+                    "symbol": asset["symbol"],
+                    "category": asset["category"],
+                    "price": 0.0,
+                    "change": "Error",
+                    "history": [0.0]
+                }
+                products_list.append(fallback)
+                products_dict[asset['symbol']] = fallback
 
     market_cache = {"list": products_list, "dict": products_dict, "timestamp": now}
+    print(f"✅ Datos cargados: {len(products_list)} activos")
     return products_list, products_dict
 
 # =========================================================
@@ -105,7 +167,6 @@ def fetch_historical_data(symbol, period):
 # =========================================================
 def preload_favorites():
     """Descarga los datos de los activos principales en segundo plano."""
-    from app.utils.utils import MARKET_UNIVERSE
     important_periods = ['1D', '1S', '1M', '6M']
     for asset in MARKET_UNIVERSE:
         for period in important_periods:

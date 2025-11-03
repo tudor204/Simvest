@@ -14,6 +14,9 @@
     .info-card {
         @apply bg-white p-6 rounded-xl shadow-lg border border-gray-100;
     }
+    .fund-specific {
+        @apply bg-blue-50 border-blue-200;
+    }
 </style>
 {% endblock %}
 
@@ -31,7 +34,7 @@
         <!-- Columna Izquierda - Información -->
         <div class="lg:col-span-1 space-y-6">
             <!-- Tarjeta de Información General -->
-            <div class="info-card">
+            <div class="info-card {% if asset.category == 'fondos' %}fund-specific{% endif %}">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
                 <div class="space-y-3">
                     <div class="flex justify-between">
@@ -40,33 +43,92 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Categoría:</span>
-                        <span class="font-medium">{{ asset.category }}</span>
+                        <span class="font-medium">{{ asset.category | title }}</span>
                     </div>
-                    {% if asset.sector and asset.sector != 'No disponible' %}
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Sector:</span>
-                        <span class="font-medium">{{ asset.sector }}</span>
-                    </div>
+                    
+                    <!-- Campos para FONDOS -->
+                    {% if asset.category == 'fondos' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Tipo:</span>
+                            <span class="font-medium">{{ asset.sector }}</span>
+                        </div>
+                        {% if asset.industry and asset.industry != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Categoría del Fondo:</span>
+                            <span class="font-medium">{{ asset.industry }}</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.total_assets and asset.total_assets != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Activos Totales:</span>
+                            <span class="font-medium">${{ "{:,.0f}".format(asset.total_assets|float) }}</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.expense_ratio and asset.expense_ratio != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Ratio de Gastos:</span>
+                            <span class="font-medium">{{ "%.2f"|format(asset.expense_ratio * 100) }}%</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.ytd_return and asset.ytd_return != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Retorno YTD:</span>
+                            <span class="font-medium {% if asset.ytd_return > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                {{ "%.2f"|format(asset.ytd_return * 100) }}%
+                            </span>
+                        </div>
+                        {% endif %}
+                    
+                    <!-- Campos para ACCIONES, ETFs, etc. -->
+                    {% else %}
+                        {% if asset.sector and asset.sector != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Sector:</span>
+                            <span class="font-medium">{{ asset.sector }}</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.industry and asset.industry != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Industria:</span>
+                            <span class="font-medium">{{ asset.industry }}</span>
+                        </div>
+                        {% endif %}
+                        {% if asset.market_cap and asset.market_cap != 'N/A' %}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Market Cap:</span>
+                            <span class="font-medium">
+                                {% if asset.market_cap is number %}
+                                    ${{ "{:,.0f}".format(asset.market_cap) }}
+                                {% else %}
+                                    {{ asset.market_cap }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
                     {% endif %}
-                    {% if asset.industry and asset.industry != 'No disponible' %}
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Industria:</span>
-                        <span class="font-medium">{{ asset.industry }}</span>
-                    </div>
-                    {% endif %}
-                    {% if asset.market_cap and asset.market_cap != 'No disponible' %}
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Market Cap:</span>
-                        <span class="font-medium">{{ asset.market_cap }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Precio Actual:</span>
-                        <span class="font-bold text-green-600">${{ "%.2f"|format(asset.current_price) }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Cierre Anterior:</span>
-                        <span class="font-medium">${{ "%.2f"|format(asset.previous_close) }}</span>
+
+                    <!-- Precios (común a todos) -->
+                    <div class="border-t pt-3 mt-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Precio Actual:</span>
+                            <span class="font-bold text-green-600">
+                                {% if asset.current_price and asset.current_price != 'N/A' %}
+                                    ${{ "%.2f"|format(asset.current_price) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Cierre Anterior:</span>
+                            <span class="font-medium">
+                                {% if asset.previous_close and asset.previous_close != 'N/A' %}
+                                    ${{ "%.2f"|format(asset.previous_close) }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +136,9 @@
             <!-- Descripción -->
             <div class="info-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Descripción</h2>
-                <p class="text-gray-700 leading-relaxed">{{ asset.description }}</p>
+                <p class="text-gray-700 leading-relaxed">
+                    {{ asset.description }}
+                </p>
             </div>
 
             <!-- Formulario de Compra Rápida -->
@@ -115,6 +179,11 @@
                 <div class="h-96">
                     <canvas id="historicalChart"></canvas>
                 </div>
+
+                <!-- Mensaje si no hay datos -->
+                <div id="noDataMessage" class="hidden text-center py-8">
+                    <p class="text-gray-500 text-lg">No hay datos históricos disponibles para este activo.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -126,6 +195,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('historicalChart').getContext('2d');
+    const noDataMessage = document.getElementById('noDataMessage');
     let currentChart = null;
 
     const chartConfig = {
@@ -141,16 +211,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleFont: { size: 14 },
                     bodyFont: { size: 13 },
-                    padding: 10
+                    padding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            return `Precio: $${context.parsed.y.toFixed(2)}`;
+                        }
+                    }
                 }
             },
             scales: {
-                x: { grid: { color: 'rgba(0,0,0,0.1)' }, ticks: { color: '#6B7280' } },
+                x: { 
+                    grid: { color: 'rgba(0,0,0,0.1)' }, 
+                    ticks: { color: '#6B7280' }
+                },
                 y: { 
                     grid: { color: 'rgba(0,0,0,0.1)' }, 
                     ticks: {
                         color: '#6B7280',
-                        callback: function(value) { return '$' + value.toFixed(2); }
+                        callback: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
                     }
                 }
             },
@@ -160,22 +240,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderChart(period) {
         fetch(`/market/asset/{{ asset.symbol }}/history/${period}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return res.json();
+            })
             .then(data => {
-                if (!data || data.error) {
-                    console.error('No se pudieron cargar los datos:', data?.error);
+                if (!data || data.error || data.length === 0) {
+                    console.warn('No se pudieron cargar los datos históricos:', data?.error);
+                    if (currentChart) {
+                        currentChart.destroy();
+                        currentChart = null;
+                    }
+                    document.getElementById('historicalChart').classList.add('hidden');
+                    noDataMessage.classList.remove('hidden');
                     return;
                 }
 
+                document.getElementById('historicalChart').classList.remove('hidden');
+                noDataMessage.classList.add('hidden');
+
                 const labels = data.map(item => {
                     const date = new Date(item.time);
-                    return period === '1D'
-                        ? date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-                        : date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                    if (period === '1D') {
+                        return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    } else if (period === '1S') {
+                        return date.toLocaleDateString('es-ES', { weekday: 'short', hour: '2-digit' });
+                    } else {
+                        return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: period === '5A' ? '2-digit' : undefined });
+                    }
                 });
+                
                 const prices = data.map(item => item.price);
 
-                if (currentChart) currentChart.destroy();
+                if (currentChart) {
+                    currentChart.destroy();
+                }
 
                 currentChart = new Chart(ctx, {
                     ...chartConfig,
@@ -185,17 +286,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             label: 'Precio ($)',
                             data: prices,
                             borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37,99,235,0.1)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 2,
                             fill: true,
                             tension: 0.4,
                             pointRadius: 0,
-                            pointHoverRadius: 4
+                            pointHoverRadius: 4,
+                            pointBackgroundColor: '#2563eb',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
                         }]
                     }
                 });
             })
-            .catch(err => console.error('Error cargando datos históricos:', err));
+            .catch(err => {
+                console.error('Error cargando datos históricos:', err);
+                document.getElementById('historicalChart').classList.add('hidden');
+                noDataMessage.classList.remove('hidden');
+            });
     }
 
     // Botones de periodo
@@ -203,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', function() {
             document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            renderChart(this.getAttribute('data-period'));
+            renderChart(this.dataset.period);
         });
     });
 

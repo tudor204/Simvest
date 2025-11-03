@@ -101,7 +101,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in portafolio if not item.is_sold %}
+                    {% for item in portafolio %}
                     <tr class="border-b hover:bg-gray-50 transition">
                         <td class="px-6 py-4 font-semibold text-gray-900">{{ item.name }}</td>
                         <td class="px-6 py-4">{{ "{:,.2f}".format(item.quantity) }}</td>
@@ -121,7 +121,7 @@
                                        min="0.01"
                                        max="{{ item.quantity }}"
                                        step="any"
-                                       value="{{ "{:,.2f}".format(item.quantity) }}"
+                                       value="{{ item.quantity }}"
                                        class="w-20 border border-gray-300 rounded-md p-1 text-sm text-right focus:ring focus:ring-blue-200">
                                 <button type="submit"
                                         class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-xs shadow-sm transition">
@@ -145,44 +145,55 @@
 </main>
 
 <!-- Chart.js -->
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('portfolioChart').getContext('2d');
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('portfolioChart').getContext('2d');
 
-const labels = {{ portfolio_history["labels"] | tojson | safe }};
-const data = {{ portfolio_history["values"] | tojson | safe }};
+    const labels = {{ portfolio_history["labels"] | tojson | safe }};
+    const data = {{ portfolio_history["values"] | tojson | safe }};
 
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: labels,
-        datasets: [{
-            label: 'Valor del Portafolio',
-            data: data,
-            fill: true,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-            tension: 0.3,
-            pointRadius: 4,
-            pointBackgroundColor: '#3b82f6'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', intersect: false }
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Valor del Portafolio',
+                data: data,
+                fill: true,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#3b82f6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2
+            }]
         },
-        scales: {
-            y: { 
-                beginAtZero: false, 
-                ticks: { 
-                    callback: value => '$' + value.toLocaleString() 
-                } 
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { 
+                    mode: 'index', 
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `Valor: $${context.parsed.y.toLocaleString()}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { 
+                    beginAtZero: false, 
+                    ticks: { 
+                        callback: value => '$' + value.toLocaleString() 
+                    } 
+                }
             }
         }
-    }
+    });
 });
 </script>
 

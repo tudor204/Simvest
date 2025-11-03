@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app.market_service import fetch_live_market_data, fetch_historical_data  # ✅ Nuevo import
+from app.market_service import fetch_live_market_data, fetch_historical_data
 from app.utils.utils import MARKET_UNIVERSE 
 from app.models import Holding, db
 from datetime import datetime
@@ -9,6 +9,47 @@ import yfinance as yf
 
 # --- Definir Blueprint ---
 market_bp = Blueprint('market', __name__, url_prefix='/market')
+
+def get_asset_details(symbol, category):
+    """Obtiene detalles específicos del activo según su categoría"""
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        
+        # Campos base comunes
+        asset_details = {
+            'name': info.get('longName', info.get('shortName', 'N/A')),
+            'symbol': symbol,
+            'category': category,
+            'description': info.get('longBusinessSummary', 'Sin descripción disponible.'),
+            'current_price': info.get('currentPrice', info.get('regularMarketPrice', 0)),
+            'previous_close': info.get('previousClose', 0)
+        }
+        
+        # Campos específicos por categoría
+        if category == 'fondos':
+            asset_details.update({
+                'sector': 'Fondo de Inversión',
+                'industry': info.get('category', 'N/A'),
+                'market_cap': info.get('totalAssets', 'N/A'),
+                # Campos adicionales específicos de fondos
+                'expense_ratio': info.get('annualReportExpenseRatio', 'N/A'),
+                'ytd_return': info.get('ytdReturn', 'N/A'),
+                'total_assets': info.get('totalAssets', 'N/A')
+            })
+        else:
+            # Para acciones, ETFs, crypto, etc.
+            asset_details.update({
+                'sector': info.get('sector', 'N/A'),
+                'industry': info.get('industry', 'N/A'),
+                'market_cap': info.get('marketCap', 'N/A')
+            })
+        
+        return asset_details
+        
+    except Exception as e:
+        print(f"Error obteniendo detalles para {symbol}: {e}")
+        return None
 
 @market_bp.route('/', methods=['GET', 'POST'])
 @login_required
@@ -89,13 +130,11 @@ def get_live_market_data():
         print(f"Error en la ruta /data/live: {e}")
         return jsonify({"error": "No se pudieron cargar los datos de cotización."}), 500
 
-
 @market_bp.route('/asset/<string:symbol>')
 @login_required
 def asset_detail(symbol):
     """
     Página de detalles de un activo específico
-    (solo carga información general, los históricos se piden aparte vía AJAX)
     """
     try:
         # Buscar el activo en el universo de mercado
@@ -104,28 +143,20 @@ def asset_detail(symbol):
             flash(f'Activo {symbol} no encontrado.', 'danger')
             return redirect(url_for('market.market'))
 
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-
-        asset_details = {
-            'name': asset_info['name'],
-            'symbol': symbol,
-            'sector': info.get('sector', 'N/A'),
-            'industry': info.get('industry', 'N/A'),
-            'market_cap': info.get('marketCap', 'N/A'),
-            'description': info.get('longBusinessSummary', 'Sin descripción disponible.'),
-            'current_price': info.get('currentPrice', 0),
-            'previous_close': info.get('previousClose', 0)
-        }
+        # Usar la nueva función adaptada
+        asset_details = get_asset_details(symbol, asset_info['category'])
         
-        # 👇 Ya no descargamos todos los periodos aquí, eso se pide con /history/<period>
+        if not asset_details:
+            flash(f'Error al cargar datos para {symbol}.', 'danger')
+            return redirect(url_for('market.market'))
+        
         return render_template('Market/asset_detail.html', asset=asset_details)
         
     except Exception as e:
         flash(f'Error al cargar datos para {symbol}: {str(e)}', 'danger')
         return redirect(url_for('market.market'))
 
-
+# Las demás rutas (history, sell) se mantienen igual...
 @market_bp.route('/asset/<string:symbol>/history/<string:period>')
 @login_required
 def load_asset_historical_data(symbol, period):
@@ -134,7 +165,7 @@ def load_asset_historical_data(symbol, period):
     """
     try:
         start_time = time.time()
-        data = fetch_historical_data(symbol, period)  # ✅ Nueva función desde market_service.py
+        data = fetch_historical_data(symbol, period)
         load_time = time.time() - start_time
         
         print(f"📊 Datos {period} para {symbol} cargados en {load_time:.2f}s")
@@ -147,7 +178,6 @@ def load_asset_historical_data(symbol, period):
     except Exception as e:
         print(f"❌ Error cargando datos históricos para {symbol} ({period}): {e}")
         return jsonify({'error': str(e)}), 500
-
 
 @market_bp.route('/sell', methods=['POST'])
 @login_required
