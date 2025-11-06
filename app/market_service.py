@@ -1,4 +1,5 @@
 import yfinance as yf
+import pandas as pd
 import time
 from app.utils.utils import MARKET_UNIVERSE
 

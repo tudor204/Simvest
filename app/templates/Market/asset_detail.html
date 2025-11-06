@@ -2,6 +2,7 @@
 
 {% block styles %}
 <style>
+    /* ... Tus estilos Tailwind ... */
     .period-btn {
         @apply px-4 py-2 rounded-lg transition-colors font-medium;
     }
@@ -22,7 +23,6 @@
 
 {% block content %}
 <div class="container mx-auto mt-8 p-6">
-    <!-- Header y Navegación -->
     <div class="mb-6">
         <a href="{{ url_for('market.market') }}" class="text-blue-600 hover:text-blue-800 font-medium">
             ← Volver al Mercado
@@ -31,89 +31,41 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Columna Izquierda - Información -->
         <div class="lg:col-span-1 space-y-6">
-            <!-- Tarjeta de Información General -->
             <div class="info-card {% if asset.category == 'fondos' %}fund-specific{% endif %}">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
                 <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Símbolo:</span>
-                        <span class="font-mono font-medium">{{ asset.symbol }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Categoría:</span>
-                        <span class="font-medium">{{ asset.category | title }}</span>
-                    </div>
+                    <div class="flex justify-between"><span class="text-gray-600">Símbolo:</span><span class="font-mono font-medium">{{ asset.symbol }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">Categoría:</span><span class="font-medium">{{ asset.category | title }}</span></div>
                     
-                    <!-- Campos para FONDOS -->
                     {% if asset.category == 'fondos' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Tipo:</span>
-                            <span class="font-medium">{{ asset.sector }}</span>
-                        </div>
-                        {% if asset.industry and asset.industry != 'N/A' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Categoría del Fondo:</span>
-                            <span class="font-medium">{{ asset.industry }}</span>
-                        </div>
-                        {% endif %}
                         {% if asset.total_assets and asset.total_assets != 'N/A' %}
                         <div class="flex justify-between">
                             <span class="text-gray-600">Activos Totales:</span>
-                            <span class="font-medium">${{ "{:,.0f}".format(asset.total_assets|float) }}</span>
+                            <span class="font-medium">{{ asset.total_assets|float | currency }}</span>
                         </div>
                         {% endif %}
-                        {% if asset.expense_ratio and asset.expense_ratio != 'N/A' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Ratio de Gastos:</span>
-                            <span class="font-medium">{{ "%.2f"|format(asset.expense_ratio * 100) }}%</span>
-                        </div>
-                        {% endif %}
-                        {% if asset.ytd_return and asset.ytd_return != 'N/A' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Retorno YTD:</span>
-                            <span class="font-medium {% if asset.ytd_return > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                {{ "%.2f"|format(asset.ytd_return * 100) }}%
-                            </span>
-                        </div>
-                        {% endif %}
-                    
-                    <!-- Campos para ACCIONES, ETFs, etc. -->
-                    {% else %}
-                        {% if asset.sector and asset.sector != 'N/A' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Sector:</span>
-                            <span class="font-medium">{{ asset.sector }}</span>
-                        </div>
-                        {% endif %}
-                        {% if asset.industry and asset.industry != 'N/A' %}
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Industria:</span>
-                            <span class="font-medium">{{ asset.industry }}</span>
-                        </div>
-                        {% endif %}
+                        {% else %}
                         {% if asset.market_cap and asset.market_cap != 'N/A' %}
                         <div class="flex justify-between">
                             <span class="text-gray-600">Market Cap:</span>
                             <span class="font-medium">
                                 {% if asset.market_cap is number %}
-                                    ${{ "{:,.0f}".format(asset.market_cap) }}
+                                    {{ asset.market_cap | currency }}
                                 {% else %}
                                     {{ asset.market_cap }}
                                 {% endif %}
                             </span>
                         </div>
                         {% endif %}
-                    {% endif %}
+                        {% endif %}
 
-                    <!-- Precios (común a todos) -->
                     <div class="border-t pt-3 mt-3">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Precio Actual:</span>
                             <span class="font-bold text-green-600">
                                 {% if asset.current_price and asset.current_price != 'N/A' %}
-                                    ${{ "%.2f"|format(asset.current_price) }}
+                                    {{ asset.current_price | currency }}
                                 {% else %}
                                     N/A
                                 {% endif %}
@@ -123,7 +75,7 @@
                             <span class="text-gray-600">Cierre Anterior:</span>
                             <span class="font-medium">
                                 {% if asset.previous_close and asset.previous_close != 'N/A' %}
-                                    ${{ "%.2f"|format(asset.previous_close) }}
+                                    {{ asset.previous_close | currency }}
                                 {% else %}
                                     N/A
                                 {% endif %}
@@ -132,8 +84,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Descripción -->
+            
             <div class="info-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Descripción</h2>
                 <p class="text-gray-700 leading-relaxed">
@@ -141,7 +92,6 @@
                 </p>
             </div>
 
-            <!-- Formulario de Compra Rápida -->
             <div class="info-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Compra Rápida</h2>
                 <form method="POST" action="{{ url_for('market.market') }}">
@@ -151,8 +101,8 @@
                             Cantidad
                         </label>
                         <input type="number" id="quantity" name="quantity" required min="0.00001" step="any"
-                               class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="0.00">
+                                class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="0.00">
                     </div>
                     <button type="submit" 
                             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md">
@@ -162,10 +112,8 @@
             </div>
         </div>
 
-        <!-- Columna Derecha - Gráfico -->
         <div class="lg:col-span-2">
             <div class="info-card">
-                <!-- Selector de Periodo -->
                 <div class="flex flex-wrap gap-2 mb-6">
                     <button class="period-btn active" data-period="1D">1 Día</button>
                     <button class="period-btn" data-period="1S">1 Semana</button>
@@ -175,19 +123,17 @@
                     <button class="period-btn" data-period="5A">5 Años</button>
                 </div>
 
-                <!-- Contenedor del Gráfico -->
                 <div class="h-96">
                     <canvas id="historicalChart"></canvas>
                 </div>
 
-                <!-- Mensaje si no hay datos -->
                 <div id="noDataMessage" class="hidden text-center py-8">
                     <p class="text-gray-500 text-lg">No hay datos históricos disponibles para este activo.</p>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+        
+    </div> </div>
 {% endblock %}
 
 {% block scripts %}

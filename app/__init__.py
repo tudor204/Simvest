@@ -31,7 +31,7 @@ login_manager.init_app(app)
 # =========================================================
 # 3. Importar modelos
 # =========================================================
-from app.models import User  # CORRECTO, evita import circular
+from app.models import User
 
 # =========================================================
 # 4. Registrar blueprints
@@ -43,3 +43,21 @@ from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
 
 from app.controllers import IndexController, RegisterController, LoginController
+
+# =========================================================
+# 5. Registrar Filtros de Plantilla (Jinja2)
+# =========================================================
+@app.template_filter('currency')
+def currency_filter(value):
+    """
+    Formatea un valor numérico como una cadena de moneda USD.
+    Ej: 1234.5 -> $1,234.50
+    """
+    try:
+        val = float(value)
+        # Formato: $1,234.50
+        return f"${val:,.2f}"
+    except (ValueError, TypeError, AttributeError):
+        # Si es None, un string vacío o un valor no válido, 
+        # devuelve el valor original sin fallar.
+        return value
