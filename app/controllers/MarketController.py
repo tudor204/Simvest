@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from app.market_service import fetch_live_market_data, fetch_historical_data
+# Importaciones de Servicios y Utilidades
+from app.market_service import fetch_live_market_data, fetch_historical_data, fetch_single_asset_details
 from app.utils.utils import MARKET_UNIVERSE 
-from app.models import Holding, db
+# Importaciones de Modelos
+from app.models import Holding, db, Transaction, User
 from datetime import datetime
 import time
 import yfinance as yf
@@ -11,7 +13,7 @@ import yfinance as yf
 market_bp = Blueprint('market', __name__, url_prefix='/market')
 
 def get_asset_details(symbol, category):
-    """Obtiene detalles específicos del activo según su categoría"""
+    """Obtiene detalles específicos del activo según su categoría usando yfinance"""
     try:
         ticker = yf.Ticker(symbol)
         info = ticker.info
@@ -32,7 +34,6 @@ def get_asset_details(symbol, category):
                 'sector': 'Fondo de Inversión',
                 'industry': info.get('category', 'N/A'),
                 'market_cap': info.get('totalAssets', 'N/A'),
-                # Campos adicionales específicos de fondos
                 'expense_ratio': info.get('annualReportExpenseRatio', 'N/A'),
                 'ytd_return': info.get('ytdReturn', 'N/A'),
                 'total_assets': info.get('totalAssets', 'N/A')
@@ -51,54 +52,13 @@ def get_asset_details(symbol, category):
         print(f"Error obteniendo detalles para {symbol}: {e}")
         return None
 
-@market_bp.route('/', methods=['GET', 'POST'])
+@market_bp.route('/', methods=['GET'])
 @login_required
 def market():
-    if request.method == 'POST':
-        try:
-            _, products_dict = fetch_live_market_data()
-        except Exception as e:
-            flash(f'Error al obtener datos del mercado para la compra: {e}', 'danger')
-            return redirect(url_for('market.market'))
-
-        symbol = request.form.get('symbol', '').upper()
-        
-        try:
-            quantity = float(request.form.get('quantity'))
-            if quantity <= 0:
-                raise ValueError("La cantidad debe ser positiva.")
-        except (TypeError, ValueError, AttributeError):
-            flash('La cantidad debe ser un número positivo.', 'danger')
-            return redirect(url_for('market.market'))
-
-        if symbol not in products_dict or products_dict[symbol]['price'] <= 0:
-            flash(f'Activo {symbol} no disponible o sin precio de cotización.', 'danger')
-            return redirect(url_for('market.market'))
-
-        asset_info = products_dict[symbol]
-        price_per_share = asset_info['price']
-        total_cost = quantity * price_per_share
-        
-        if total_cost > current_user.capital:
-            flash('Capital insuficiente para realizar esta compra.', 'danger')
-            return redirect(url_for('market.market'))
-        
-        new_holding = Holding(
-            user_id=current_user.id,
-            symbol=symbol,
-            name=asset_info['name'],
-            quantity=quantity,
-            purchase_price=price_per_share,
-            purchase_date=datetime.utcnow()
-        )
-        current_user.capital -= total_cost
-        
-        db.session.add(new_holding)
-        db.session.commit()
-        
-        flash(f'Compra simulada exitosa: {quantity} {symbol} por ${total_cost:,.2f}', 'success')
-        return redirect(url_for('market.market'))
-
+    """
+    Ruta principal del mercado. Solo maneja la visualización de la lista de activos.
+    (El método POST para compra ha sido movido a la ruta '/buy')
+    """
     return render_template(
         'Market/market.html',
         market_universe=MARKET_UNIVERSE 
@@ -117,7 +77,7 @@ def get_live_market_data():
             {
                 'symbol': p['symbol'], 
                 'price': p['price'], 
-                'change': p['change'],                
+                'change': p['change'],           
                 'category': p.get('category', 'N/A'),
                 'history': p.get('history', [])
             }
@@ -156,7 +116,6 @@ def asset_detail(symbol):
         flash(f'Error al cargar datos para {symbol}: {str(e)}', 'danger')
         return redirect(url_for('market.market'))
 
-# Las demás rutas (history, sell) se mantienen igual...
 @market_bp.route('/asset/<string:symbol>/history/<string:period>')
 @login_required
 def load_asset_historical_data(symbol, period):
@@ -179,42 +138,174 @@ def load_asset_historical_data(symbol, period):
         print(f"❌ Error cargando datos históricos para {symbol} ({period}): {e}")
         return jsonify({'error': str(e)}), 500
 
+# =========================================================
+# 💵 RUTA DE COMPRA
+# =========================================================
+@market_bp.route('/buy', methods=['POST'])
+@login_required
+def buy():
+    """
+    Maneja la lógica de la compra de un activo, actualizando o creando la posición
+    (Holding) y registrando la Transacción.
+    """
+    symbol = request.form.get('symbol', '').upper()
+    
+    # 1. Obtener datos de la compra
+    try:
+        quantity = float(request.form.get('quantity'))
+        if quantity <= 0:
+            raise ValueError()
+    except (TypeError, ValueError):
+        flash('La cantidad a comprar debe ser un número positivo.', 'danger')
+        # Redirigimos al detalle del activo o al mercado si el símbolo no está disponible
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+
+    # 2. Obtener cotización actual
+    try:
+        # Usamos la función optimizada para una sola consulta
+        asset_details = fetch_single_asset_details(symbol) # <--- ¡CAMBIO CLAVE!
+    except Exception:
+        flash('Error al obtener la cotización actual. Compra cancelada.', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+
+    # 3. Validar precio y existencia del activo
+    if not asset_details or asset_details['price'] <= 0: # <-- Validamos el nuevo resultado
+        flash(f'Activo {symbol} no disponible o sin precio de cotización.', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+
+    # Adaptar variables
+    price_per_unit = asset_details['price']
+    asset_name = asset_details['name'] # El nombre del activo
+    total_cost = quantity * price_per_unit
+
+    # 4. Validar Capital
+    if total_cost > current_user.capital:
+        flash(f'Capital insuficiente. Necesitas ${total_cost:,.2f} y solo tienes ${current_user.capital:,.2f}.', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+    
+    # 5. Buscar o Crear Holding y Recalcular Precio Promedio
+    holding = Holding.query.filter_by(symbol=symbol, user_id=current_user.id).first()
+
+    if holding:
+        # 5a. ACTIVO EXISTENTE: Recalcular Precio Promedio Ponderado
+        
+        # Valor total actual de la posición (cantidad * precio_promedio)
+        current_total_value = holding.quantity * holding.purchase_price
+        
+        # Nuevo valor total de la posición
+        new_total_value = current_total_value + total_cost
+        
+        # Nueva cantidad total
+        new_quantity = holding.quantity + quantity
+        
+        # Actualizar Holding
+        holding.purchase_price = new_total_value / new_quantity
+        holding.quantity = new_quantity
+        holding.purchase_date = datetime.utcnow()
+        
+    else:
+        # 5b. NUEVO ACTIVO: Crear un nuevo Holding
+        holding = Holding(
+            user_id=current_user.id,
+            symbol=symbol,
+            name=asset_name,
+            quantity=quantity,
+            purchase_price=price_per_unit,
+            purchase_date=datetime.utcnow()
+        )
+        db.session.add(holding)
+        
+    # 6. Actualizar Capital
+    current_user.capital -= total_cost
+    
+    # 7. REGISTRAR LA TRANSACCIÓN
+    new_transaction = Transaction(
+        user_id=current_user.id,
+        symbol=symbol,
+        type='BUY',
+        quantity=quantity,
+        price_per_unit=price_per_unit,
+        total_amount=total_cost
+    )
+    db.session.add(new_transaction)
+    
+    # 8. Guardar todos los cambios
+    db.session.commit()
+    
+    flash(f'Compra simulada exitosa: {quantity:,.4f} {symbol} por ${total_cost:,.2f}', 'success')
+    return redirect(url_for('dashboard.dashboard'))
+
+
+# =========================================================
+# 💰 RUTA DE VENTA
+# =========================================================
 @market_bp.route('/sell', methods=['POST'])
 @login_required
 def sell():
-    try:
-        _, products_dict = fetch_live_market_data()
-    except Exception:
-        flash('Error al obtener la cotización actual. Venta cancelada.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
+    """
+    Maneja la venta de un activo, actualizando el holding y registrando la Transacción.
+    """
+    # 1. Obtener datos del formulario
     holding_id = request.form.get('holding_id', type=int) 
     quantity_to_sell = request.form.get('quantity_to_sell', type=float)
     
+    # 2. Obtener cotización actual
+    try:
+        _, products_dict = fetch_live_market_data() 
+    except Exception:
+        db.session.rollback()
+        flash('Error al obtener la cotización actual. Venta cancelada.', 'danger')
+        return redirect(url_for('dashboard.dashboard'))
+
+    # 3. Validar Posición (Holding)
     holding = Holding.query.filter_by(id=holding_id, user_id=current_user.id).first()
 
     if not holding:
-        flash('Posición no encontrada.', 'danger')
+        flash('Posición no encontrada o no pertenece a tu cartera.', 'danger')
         return redirect(url_for('dashboard.dashboard'))
 
-    if quantity_to_sell is None or quantity_to_sell <= 0 or quantity_to_sell > holding.quantity:
-        flash('Cantidad de venta no válida.', 'danger')
+    # 4. Validar Cantidad
+    if quantity_to_sell is None or quantity_to_sell <= 0:
+        flash('La cantidad a vender debe ser un número positivo.', 'danger')
+        return redirect(url_for('dashboard.dashboard'))
+        
+    if quantity_to_sell > holding.quantity:
+        flash(f'Solo tienes {holding.quantity:,.4f} unidades de {holding.symbol} para vender.', 'danger')
         return redirect(url_for('dashboard.dashboard'))
 
+    # 5. Validar Precio de Venta
     if holding.symbol not in products_dict or products_dict[holding.symbol]['price'] <= 0:
         flash(f'No se pudo obtener el precio de venta actual para {holding.symbol}. Venta cancelada.', 'danger')
         return redirect(url_for('dashboard.dashboard'))
         
     current_price = products_dict[holding.symbol]['price']
     
+    # 6. Ejecutar la Venta (Actualización de Modelos)
     total_proceeds = quantity_to_sell * current_price
+    
+    # Aumentar el capital del usuario
     current_user.capital += total_proceeds
+    
+    # Disminuir la cantidad de la posición
     holding.quantity -= quantity_to_sell
     
+    # 7. REGISTRAR LA TRANSACCIÓN
+    new_transaction = Transaction(
+        user_id=current_user.id,
+        symbol=holding.symbol,
+        type='SELL',
+        quantity=quantity_to_sell,
+        price_per_unit=current_price,
+        total_amount=total_proceeds 
+    )
+    db.session.add(new_transaction)
+    
+    # 8. Limpiar Posición si es residual
     if holding.quantity < 0.00001:
         db.session.delete(holding) 
     
+    # 9. Guardar todos los cambios
     db.session.commit()
     
-    flash(f'Venta simulada exitosa: {quantity_to_sell:,.2f} {holding.symbol} por ${total_proceeds:,.2f}', 'success')
+    flash(f'Venta simulada exitosa: {quantity_to_sell:,.4f} {holding.symbol} vendidas por ${total_proceeds:,.2f}', 'success')
     return redirect(url_for('dashboard.dashboard'))

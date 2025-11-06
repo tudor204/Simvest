@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from .config import Config
-
+from flask_migrate import Migrate # Ya está importado, ¡bien!
 
 # =========================================================
 # 0. Cargar variables de entorno
@@ -17,6 +17,7 @@ load_dotenv()
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
+migrate = Migrate() 
 
 # =========================================================
 # 2. Inicializar la app
@@ -27,11 +28,16 @@ app.config.from_object(Config)
 db.init_app(app)
 bcrypt.init_app(app)
 login_manager.init_app(app)
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# ⚠️ SOLUCIÓN: INICIALIZAR FLASK-MIGRATE AQUÍ
+migrate.init_app(app, db)
+# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # =========================================================
 # 3. Importar modelos
 # =========================================================
-from app.models import User
+# Importar todos los modelos *después* de que db se inicialice (necesario para Migrate)
+from app.models import User, Holding, Transaction # Asegúrate de que Transaction esté aquí
 
 # =========================================================
 # 4. Registrar blueprints
@@ -51,13 +57,9 @@ from app.controllers import IndexController, RegisterController, LoginController
 def currency_filter(value):
     """
     Formatea un valor numérico como una cadena de moneda USD.
-    Ej: 1234.5 -> $1,234.50
     """
     try:
         val = float(value)
-        # Formato: $1,234.50
         return f"${val:,.2f}"
     except (ValueError, TypeError, AttributeError):
-        # Si es None, un string vacío o un valor no válido, 
-        # devuelve el valor original sin fallar.
         return value

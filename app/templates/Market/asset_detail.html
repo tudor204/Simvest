@@ -94,7 +94,7 @@
 
             <div class="info-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-800">Compra Rápida</h2>
-                <form method="POST" action="{{ url_for('market.market') }}">
+                <form method="POST" action="{{ url_for('market.buy') }}">
                     <input type="hidden" name="symbol" value="{{ asset.symbol }}">
                     <div class="mb-4">
                         <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">

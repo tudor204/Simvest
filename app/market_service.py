@@ -7,7 +7,7 @@ from app.utils.utils import MARKET_UNIVERSE
 # CACHÉ DE DATOS EN VIVO
 # =========================================================
 market_cache = {"list": [], "dict": {}, "timestamp": 0}
-CACHE_DURATION = 600  # segundos = 10 min
+CACHE_DURATION = 600    # segundos = 10 min
 
 def safe_get(info, keys, default=None):
     """Obtiene valor de forma segura probando múltiples keys"""
@@ -49,6 +49,34 @@ def get_asset_price_and_change(ticker, symbol):
         print(f"Error obteniendo precio para {symbol}: {e}")
         return 0.0, "0.00%", None
 
+# =========================================================
+# FUNCIÓN NUEVA: Obtener detalles de un solo activo (Rápida)
+# =========================================================
+def fetch_single_asset_details(symbol):
+    """
+    Obtiene el precio actual y el nombre de un único activo, optimizado para transacciones.
+    Reutiliza la lógica robusta de yfinance.
+    """
+    try:
+        ticker = yf.Ticker(symbol)
+        
+        # Obtenemos precio y cambio con la función ya existente (pero el historial se ignora)
+        price, _, _ = get_asset_price_and_change(ticker, symbol)
+        
+        # Obtenemos el nombre para la transacción
+        info = ticker.info
+        name = safe_get(info, ['longName', 'shortName'])
+        
+        if price > 0:
+            return {'price': price, 'name': name}
+        return None
+    except Exception as e:
+        print(f"❌ Error al obtener detalles para {symbol}: {e}")
+        return None
+
+# =========================================================
+# FUNCIÓN: Obtener datos en vivo de todo el mercado (Con caché)
+# =========================================================
 def fetch_live_market_data():
     """Obtiene datos en vivo de todos los activos con caché."""
     global market_cache

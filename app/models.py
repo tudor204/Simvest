@@ -1,9 +1,19 @@
 from flask_login import UserMixin 
 from . import db, bcrypt, login_manager 
 from datetime import datetime
+from sqlalchemy import func # Importamos func para usar current_timestamp
+
+# --- Configuración de Flask-Login ---
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'warning'
 login_manager.login_message = 'Por favor, inicia sesión para acceder a esta página.'
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Función requerida por Flask-Login para cargar un usuario."""
+    return db.session.get(User, int(user_id))
+
+# --- Modelos de Base de Datos ---
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -11,34 +21,67 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    # Capital inicial de simulación
     capital = db.Column(db.Float, nullable=False, default=10000.00) 
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
 
-@login_manager.user_loader
-def load_user(user_id):
-    """Función requerida por Flask-Login para cargar un usuario."""
-    return db.session.get(User, int(user_id))
-
 class Holding(db.Model):
-    """Representa un activo simulado poseído por un usuario."""
+    """
+    Representa las POSICIONES ACTIVAS (los activos que el usuario posee actualmente).
+    Nota: Se eliminó 'is_sold' ya que el estado se deduce de la cantidad.
+    """
     __tablename__ = 'holdings'
     id = db.Column(db.Integer, primary_key=True)
     
-    # Clave Foránea: Vincula esta inversión al usuario
+    # Clave Foránea
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
-    # Datos del activo simulado
-    symbol = db.Column(db.String(10), nullable=False) # Ej: 'AAPL', 'GOOGL'
-    name = db.Column(db.String(100), nullable=False)  # Ej: 'Apple Inc.'
+    # Datos del activo
+    symbol = db.Column(db.String(10), nullable=False) # Ej: 'AAPL'
+    name = db.Column(db.String(100), nullable=False) 
     
-    quantity = db.Column(db.Float, nullable=False)     # Número de acciones compradas
-    purchase_price = db.Column(db.Float, nullable=False) # Precio por acción al momento de la compra
+    quantity = db.Column(db.Float, nullable=False)
+    
+    # Este campo debe reflejar el precio promedio ponderado de compra
+    purchase_price = db.Column(db.Float, nullable=False) 
     purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    is_sold = db.Column(db.Boolean, nullable=False, default=False)
-    # Relación bidireccional con User para facilitar consultas
+
+    # Relaciones
     user = db.relationship('User', backref=db.backref('holdings', lazy=True))
 
     def __repr__(self):
         return f"Holding('{self.symbol}', UserID: {self.user_id}, Quantity: {self.quantity})"
+
+
+class Transaction(db.Model):
+    """
+    Representa un registro HISTÓRICO e INMUTABLE de una compra o venta.
+    Esencial para el historial del usuario y el cálculo de P&L.
+    """
+    __tablename__ = 'transactions'
+
+    # ID y Claves
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Datos de la Operación
+    symbol = db.Column(db.String(10), nullable=False)
+    
+    # Tipo: 'BUY' o 'SELL'
+    type = db.Column(db.String(10), nullable=False) 
+    
+    # Valores Transaccionados
+    quantity = db.Column(db.Float, nullable=False)
+    price_per_unit = db.Column(db.Float, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False) # quantity * price_per_unit
+    
+    # Timestamp
+    timestamp = db.Column(db.DateTime, index=True, default=func.current_timestamp())
+
+    # Relación
+    user = db.relationship('User', backref=db.backref('transactions', lazy=True))
+
+    def __repr__(self):
+        return f"<Transaction {self.type} {self.quantity} of {self.symbol} at ${self.price_per_unit}>"

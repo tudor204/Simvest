@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Historial de Transacciones - Simvest Pro{% endblock %}
+
+{% block content %}
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    
+    <header class="flex items-center justify-between border-b pb-4 mb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900">
+                Historial Detallado de Transacciones
+            </h1>
+            <p class="text-lg text-gray-500 mt-1">
+                Registro completo de tus operaciones de compra y venta.
+            </p>
+        </div>
+        <a href="{{ url_for('dashboard.dashboard') }}" 
+           class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Dashboard
+        </a>
+    </header>
+
+    <section class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+        
+        {% if transactions %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm text-left text-gray-700 divide-y divide-gray-200">
+                <thead class="bg-gray-50 text-gray-600 uppercase text-xs font-bold tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Tipo</th>
+                        <th class="px-6 py-3">Activo</th>
+                        <th class="px-6 py-3 text-right">Cantidad</th>
+                        <th class="px-6 py-3 text-right">Precio Unitario</th>
+                        <th class="px-6 py-3 text-right">Monto Total</th>
+                        <th class="px-6 py-3">Fecha/Hora</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for tx in transactions %}
+                    {% set tx_color = 'text-green-600 bg-green-50' if tx.type == 'BUY' else 'text-red-600 bg-red-50' %}
+                    {% set tx_icon = 'fa-plus-circle' if tx.type == 'BUY' else 'fa-minus-circle' %}
+                    <tr class="hover:bg-gray-100 transition duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center font-bold px-3 py-1 rounded-full text-xs {{ tx_color }}">
+                                <i class="fa-solid {{ tx_icon }} mr-2"></i> {{ tx.type }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ tx.symbol }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">{{ "{:,.4f}".format(tx.quantity) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">{{ tx.price_per_unit | currency }}</td>
+                        
+                        {% set total_color = 'font-bold text-red-700' if tx.type == 'BUY' else 'font-bold text-green-700' %}
+                        <td class="px-6 py-4 whitespace-nowrap text-right {{ total_color }}">{{ tx.total_amount | currency }}</td>
+                        
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                            {{ tx.timestamp.strftime('%d %b %Y %H:%M:%S') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-10 text-center bg-gray-50 rounded-xl">
+             <i class="fa-solid fa-box-open text-gray-400 text-4xl mb-4"></i>
+             <p class="text-gray-600 text-lg">
+                 Aún no has realizado ninguna transacción. El historial está vacío.
+             </p>
+        </div>
+        {% endif %}
+
+    </section>
+
+</main>
+{% endblock %}
