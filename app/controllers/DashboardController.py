@@ -79,7 +79,7 @@ def dashboard():
     # --- 4. Obtener datos históricos para el gráfico (Manteniendo la lógica optimizada) ---
     # Nota: Si el rendimiento sigue siendo un problema, este es el bloque a mover 
     # a una llamada asíncrona (AJAX) o a una tarea en segundo plano.
-    num_days = 7
+    num_days = 4
     portfolio_history = {"labels": [], "values": []}
     
     # Generar etiquetas de fechas

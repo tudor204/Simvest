@@ -141,45 +141,78 @@ def load_asset_historical_data(symbol, period):
 # =========================================================
 # 💵 RUTA DE COMPRA
 # =========================================================
+from flask import request, redirect, url_for, flash
+from flask_login import login_required, current_user
+# Asegúrate de importar tus modelos y la base de datos (db)
+# from tu_app.models import Holding, Transaction
+# from tu_app import db
+from datetime import datetime
+# Asumo que esta función existe en tu código:
+# from tu_app.utils import fetch_single_asset_details 
+
 @market_bp.route('/buy', methods=['POST'])
 @login_required
 def buy():
     """
-    Maneja la lógica de la compra de un activo, actualizando o creando la posición
-    (Holding) y registrando la Transacción.
+    Maneja la lógica de la compra de un activo, permitiendo la compra por unidades (quantity)
+    o por monto (amount_to_buy), y registra la Transacción.
     """
     symbol = request.form.get('symbol', '').upper()
     
-    # 1. Obtener datos de la compra
+    # 1. Obtener cotización actual (Necesario para calcular la cantidad/costo)
     try:
-        quantity = float(request.form.get('quantity'))
-        if quantity <= 0:
-            raise ValueError()
-    except (TypeError, ValueError):
-        flash('La cantidad a comprar debe ser un número positivo.', 'danger')
-        # Redirigimos al detalle del activo o al mercado si el símbolo no está disponible
-        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
-
-    # 2. Obtener cotización actual
-    try:
-        # Usamos la función optimizada para una sola consulta
-        asset_details = fetch_single_asset_details(symbol) # <--- ¡CAMBIO CLAVE!
+        asset_details = fetch_single_asset_details(symbol) 
     except Exception:
         flash('Error al obtener la cotización actual. Compra cancelada.', 'danger')
         return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
 
-    # 3. Validar precio y existencia del activo
-    if not asset_details or asset_details['price'] <= 0: # <-- Validamos el nuevo resultado
+    # 2. Validar precio y existencia del activo
+    if not asset_details or asset_details['price'] <= 0:
         flash(f'Activo {symbol} no disponible o sin precio de cotización.', 'danger')
         return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
-
-    # Adaptar variables
+    
     price_per_unit = asset_details['price']
-    asset_name = asset_details['name'] # El nombre del activo
-    total_cost = quantity * price_per_unit
+    asset_name = asset_details['name']
+    
+    # 3. Determinar si la compra es por UNIDADES o por MONTO
+    quantity = 0.0
+    total_cost = 0.0
+    
+    quantity_input = request.form.get('quantity')
+    amount_to_buy_input = request.form.get('amount_to_buy') # Campo que el usuario usará para comprar por capital
+    
+    try:
+        if amount_to_buy_input:
+            # Opción A: Compra por MONTO (Ej: Quiero comprar 500€ de este activo)
+            amount_to_buy = float(amount_to_buy_input)
+            if amount_to_buy <= 0:
+                raise ValueError("El monto de compra debe ser un número positivo.")
+            
+            # El costo total es el monto que el usuario quiere invertir
+            total_cost = amount_to_buy
+            # La cantidad es la parte fraccional o entera calculada
+            quantity = amount_to_buy / price_per_unit
+            
+        elif quantity_input:
+            # Opción B: Compra por UNIDADES (Comportamiento original)
+            quantity = float(quantity_input)
+            if quantity <= 0:
+                raise ValueError("La cantidad de unidades debe ser un número positivo.")
+                
+            # Cálculo del costo total
+            total_cost = quantity * price_per_unit
+            
+        else:
+            # Ningún campo de compra fue enviado
+            raise ValueError("Debe especificar la cantidad de unidades o el monto de capital a invertir.")
 
-    # 4. Validar Capital
+    except (TypeError, ValueError) as e:
+        flash(f'Entrada no válida: {e}', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+
+    # 4. Validar Capital (Usa current_user.capital como solicitaste)
     if total_cost > current_user.capital:
+        # Usa el capital del usuario para el mensaje de error
         flash(f'Capital insuficiente. Necesitas ${total_cost:,.2f} y solo tienes ${current_user.capital:,.2f}.', 'danger')
         return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
     
@@ -188,17 +221,10 @@ def buy():
 
     if holding:
         # 5a. ACTIVO EXISTENTE: Recalcular Precio Promedio Ponderado
-        
-        # Valor total actual de la posición (cantidad * precio_promedio)
         current_total_value = holding.quantity * holding.purchase_price
-        
-        # Nuevo valor total de la posición
         new_total_value = current_total_value + total_cost
-        
-        # Nueva cantidad total
         new_quantity = holding.quantity + quantity
         
-        # Actualizar Holding
         holding.purchase_price = new_total_value / new_quantity
         holding.quantity = new_quantity
         holding.purchase_date = datetime.utcnow()
@@ -209,7 +235,7 @@ def buy():
             user_id=current_user.id,
             symbol=symbol,
             name=asset_name,
-            quantity=quantity,
+            quantity=quantity, # Cantidad (potencialmente fraccionaria) comprada
             purchase_price=price_per_unit,
             purchase_date=datetime.utcnow()
         )
