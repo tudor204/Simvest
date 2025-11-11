@@ -1,100 +1,177 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simvest | Aprende a invertir sin riesgo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    
-    {% block styles %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simvest | Aprende a invertir sin riesgo</title>
 
-    <style>
-        /* Asegurar que el padding superior deje espacio para la barra de navegación fija */
-        body {
-            padding-top: 6rem; /* Ajusta según el tamaño de tu navbar */
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        main {
-            flex: 1;
-        }
-    </style>
+  <!-- Tailwind y AOS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  {% block styles %}{% endblock %}
+
+  <!-- 🎨 Configuración de paleta corporativa Simvest -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            simvest: {
+              blue: '#2563EB',
+              lightblue: '#3B82F6',
+              darkblue: '#1E40AF',
+              green: '#16A34A',
+              darkgreen: '#065F46',
+              red: '#DC2626',
+              yellow: '#FACC15',
+              purple: '#7C3AED',
+              gray: '#1F2937',
+              lightgray: '#E5E7EB',
+              bg: '#F9FAFB',
+              darkbg: '#0F172A',
+            },
+            ocean: {
+              100: '#BAE6FD',
+              300: '#38BDF8',
+              500: '#0284C7',
+              700: '#075985',
+            },
+            emerald: {
+              200: '#A7F3D0',
+              400: '#34D399',
+              600: '#059669',
+              800: '#065F46',
+            },
+          },
+        },
+      },
+      darkMode: 'media', // 🌗 Modo oscuro automático
+    }
+  </script>
+
+  <style>
+    body {
+      padding-top: 6rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    main {
+      flex: 1;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .animate-slideIn {
+      animation: slideIn 0.4s ease-out;
+    }
+  </style>
 </head>
 
-<body class="font-sans text-gray-900">
+<body class="font-sans text-simvest-gray bg-simvest-bg dark:bg-simvest-darkbg dark:text-gray-100 transition-colors duration-300">
 
-<header class="bg-white/90 backdrop-blur-sm shadow-md fixed w-full top-0 z-50">
+  <!-- 🔝 NAVBAR -->
+  <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-md fixed w-full top-0 z-50 transition-colors duration-300">
     <div class="container mx-auto flex justify-between items-center px-6 py-4">
-      <a href="{{ url_for('dashboard.dashboard') }}" class="text-2xl font-extrabold text-blue-600">Simvest</a>
-        
-        <nav class="flex items-center space-x-4">
-            
-            {% if current_user.is_authenticated %}
-            <div class="flex space-x-4 mr-4">
-                <a href="{{ url_for('dashboard.dashboard') }}" class="hover:text-blue-600 font-medium transition duration-150">Dashboard</a>
-                
-                <a href="{{ url_for('market.market') }}" class="hover:text-blue-600 font-medium transition duration-150">Mercado</a> 
-            </div>
-            
-            <span class="text-gray-600 hidden sm:inline">|</span>
-            <a href="{{ url_for('logout') }}" 
-                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
-                Cerrar Sesión
-            </a>
-            
-            {% else %}
-            <a href="{{ url_for('login') }}" class="hover:text-blue-600 font-medium transition duration-150 hidden sm:inline">
-                Iniciar Sesión
-            </a>
-            <a href="{{ url_for('register') }}"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
-                Registrarse
-            </a>
-            
-            {% endif %}
-        </nav>
-    </div>
-</header>
+      <a href="{{ url_for('dashboard.dashboard') }}" class="text-2xl font-extrabold text-simvest-blue dark:text-simvest-lightblue">
+        Simvest
+      </a>
 
-<div class="fixed top-20 left-0 right-0 z-40">
+      <nav class="flex items-center space-x-4">
+        {% if current_user.is_authenticated %}
+        <div class="flex space-x-4 mr-4">
+          <!-- Enlace activo -->
+          <a href="{{ url_for('dashboard.dashboard') }}" 
+             class="relative px-3 py-2 font-medium transition duration-150 hover:text-simvest-blue dark:hover:text-simvest-lightblue
+             {% if request.endpoint == 'dashboard.dashboard' %}
+                  text-simvest-blue dark:text-simvest-lightblue
+                  after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-simvest-blue dark:after:bg-simvest-lightblue after:rounded-full
+             {% endif %}">
+              Dashboard
+          </a>
+
+          <a href="{{ url_for('market.market') }}" 
+             class="relative px-3 py-2 font-medium transition duration-150 hover:text-simvest-blue dark:hover:text-simvest-lightblue
+             {% if request.endpoint == 'market.market' %}
+                  text-simvest-blue dark:text-simvest-lightblue
+                  after:absolute after:left-0 after:bottom-0 after:w-full after:h-[2px] after:bg-simvest-blue dark:after:bg-simvest-lightblue after:rounded-full
+             {% endif %}">
+              Mercado
+          </a>
+        </div>
+
+        <span class="text-gray-400 hidden sm:inline">|</span>
+
+        <a href="{{ url_for('logout') }}" 
+           class="bg-simvest-red hover:bg-red-700 text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
+          Cerrar Sesión
+        </a>
+
+        {% else %}
+        <a href="{{ url_for('login') }}" class="hover:text-simvest-blue dark:hover:text-simvest-lightblue font-medium transition duration-150 hidden sm:inline">
+          Iniciar Sesión
+        </a>
+        <a href="{{ url_for('register') }}"
+           class="bg-simvest-blue hover:bg-simvest-lightblue text-white px-4 py-2 rounded-lg transition font-semibold shadow-md">
+          Registrarse
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <!-- 💬 MENSAJES FLASH -->
+  <div class="fixed top-24 right-6 space-y-3 z-50">
     <div class="container mx-auto px-6">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="space-y-2 max-w-lg mx-auto">
-                {% for category, message in messages %}
-                    {% set style = 'bg-red-100 text-red-700 border-red-400' if category == 'danger' or category == 'error' else ('bg-green-100 text-green-700 border-green-400' if category == 'success' else 'bg-blue-100 text-blue-700 border-blue-400') %}
-                    <div class="p-4 text-sm rounded-lg {{ style }} border shadow-lg" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-                </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            {% set base = 'px-4 py-3 rounded-lg shadow-lg font-medium animate-slideIn border flex items-center gap-2' %}
+            {% if category == 'success' %}
+              <div class="{{ base }} bg-simvest-green/20 text-simvest-green border-simvest-green/30 dark:bg-simvest-darkgreen/40 dark:text-green-200">
+                <i class="fa-solid fa-check-circle"></i> {{ message }}
+              </div>
+            {% elif category == 'error' or category == 'danger' %}
+              <div class="{{ base }} bg-simvest-red/20 text-simvest-red border-simvest-red/30 dark:bg-red-800/40 dark:text-red-200">
+                <i class="fa-solid fa-triangle-exclamation"></i> {{ message }}
+              </div>
+            {% else %}
+              <div class="{{ base }} bg-simvest-blue/20 text-simvest-blue border-simvest-blue/30 dark:bg-blue-800/40 dark:text-blue-200">
+                <i class="fa-solid fa-info-circle"></i> {{ message }}
+              </div>
             {% endif %}
-        {% endwith %}
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
     </div>
-</div>
+  </div>
 
-<main>
+  <!-- 📄 CONTENIDO PRINCIPAL -->
+  <main data-aos="fade-up" data-aos-delay="50">
     {% block content %}{% endblock %}
-</main>
-    
-<footer class="bg-gray-900 text-gray-400 py-10 mt-auto">
+  </main>
+
+  <!-- ⚙️ FOOTER -->
+  <footer class="bg-simvest-gray text-gray-300 dark:bg-simvest-darkbg dark:text-gray-400 py-10 mt-auto transition-colors duration-300">
     <div class="container mx-auto px-6 text-center">
-        <p>&copy; 2025 Simvest. Todos los derechos reservados.</p>
+      <p>&copy; 2025 <span class="font-semibold text-simvest-lightblue">Simvest</span>. Todos los derechos reservados.</p>
     </div>
-</footer>
+  </footer>
 
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>
-    AOS.init({
-        duration: 800,
-        once: true
-    });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <!-- Scripts -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 800, once: true });
+  </script>
 
-{% block scripts %}{% endblock %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
+  {% block scripts %}{% endblock %}
 </body>
 </html>

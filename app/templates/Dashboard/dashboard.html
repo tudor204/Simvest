@@ -1,88 +1,117 @@
 {% extends "base.html" %}
-
-{% block title %}Dashboard - Simvest Pro{% endblock %}
+{% block title %}Dashboard - Simvest{% endblock %}
 
 {% block content %}
-<main class="container mx-auto px-6 py-12 space-y-10">
+<main class="container mx-auto px-6 py-12 space-y-12">
 
-    <section class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">
-                Hola, <span class="text-blue-600">{{ current_user.username }}</span> 👋
+    <!-- 🏁 Encabezado -->
+    <section class="flex flex-col md:flex-row md:items-center md:justify-between 
+                    bg-gradient-to-r from-simvest-blue to-simvest-darkblue 
+                    text-white rounded-2xl shadow-lg p-8 relative overflow-hidden">
+        <div class="z-10">
+            <h1 class="text-4xl font-extrabold mb-2">
+                Bienvenido, <span class="text-simvest-yellow">{{ current_user.username }}</span> 👋
             </h1>
-            <p class="text-lg text-gray-500">Tu simulador bursátil: gestiona tus inversiones y analiza tu portafolio.</p>
+            <p class="text-lg opacity-90">Gestiona tus inversiones, analiza tu portafolio y aprende del mercado.</p>
         </div>
-        <div class="mt-4 md:mt-0">
-            <a href="{{ url_for('market.market') }}" 
-               class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 shadow-md transition">
+        <div class="mt-6 md:mt-0 z-10">
+            <a href="{{ url_for('market.market') }}"
+               class="inline-flex items-center bg-white text-simvest-blue px-5 py-2.5 rounded-xl font-semibold 
+                      hover:bg-simvest-lightblue hover:text-white shadow transition transform hover:scale-105">
                 <i class="fa-solid fa-chart-line mr-2"></i> Ir al Mercado
             </a>
         </div>
+        <div class="absolute right-0 bottom-0 opacity-10 text-8xl pr-6 pb-4">
+            📊
+        </div>
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-500 hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">💰 Capital Disponible</h3>
-            <p class="text-4xl font-bold text-blue-700">{{ current_capital | currency }}</p>
+    <!-- 💰 Tarjetas resumen -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="p-6 bg-gradient-to-br from-simvest-lightblue/20 to-simvest-blue/10 
+                    rounded-2xl border border-simvest-blue/30 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-simvest-gray">💰 Capital Disponible</h3>
+                <i class="fa-solid fa-wallet text-simvest-blue text-xl"></i>
+            </div>
+            <p class="text-4xl font-bold text-simvest-blue">{{ current_capital | currency }}</p>
             <p class="text-gray-500 mt-1">Monto listo para invertir.</p>
         </div>
 
-        <div class="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">📈 Valor del Portafolio</h3>
-            <p class="text-4xl font-bold text-yellow-600">{{ (valor_portafolio | default(0)) | currency }}</p>
+        <div class="p-6 bg-gradient-to-br from-simvest-yellow/20 to-yellow-50 
+                    rounded-2xl border border-simvest-yellow/40 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-simvest-gray">📈 Valor del Portafolio</h3>
+                <i class="fa-solid fa-chart-area text-simvest-yellow text-xl"></i>
+            </div>
+            <p class="text-4xl font-bold text-simvest-yellow">{{ (valor_portafolio | default(0)) | currency }}</p>
             <p class="text-gray-500 mt-1">Suma de todas tus posiciones.</p>
         </div>
 
-        <div class="p-6 rounded-2xl shadow-lg bg-gradient-to-br from-green-50 to-green-100 border-l-4 border-green-500 hover:shadow-xl transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">💼 Capital Total (Neto)</h3>
-            <p class="text-4xl font-bold text-green-700">{{ (total_capital | default(0)) | currency }}</p>
+        <div class="p-6 bg-gradient-to-br from-emerald-200/30 to-emerald-100/40 
+                    rounded-2xl border border-emerald-400/30 shadow-sm hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-simvest-gray">💼 Capital Total (Neto)</h3>
+                <i class="fa-solid fa-sack-dollar text-simvest-green text-xl"></i>
+            </div>
+            <p class="text-4xl font-bold text-simvest-green">{{ (total_capital | default(0)) | currency }}</p>
             <p class="text-gray-500 mt-1">Capital disponible + valor del portafolio.</p>
         </div>
     </section>
 
-    <section class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Evolución del Portafolio</h2>
-        <canvas id="portfolioChart" class="w-full h-32"></canvas> 
+    <!-- 📊 Gráfico -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-simvest-gray dark:text-gray-100">📊 Evolución del Portafolio</h2>
+        </div>
+        <canvas id="portfolioChart" class="w-full h-40"></canvas> 
     </section>
 
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition duration-300 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-1 flex items-center">
-                <i class="fa-solid fa-globe text-blue-500 mr-2"></i> Mercados
+    <!-- ⚡ Accesos rápidos -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 
+                    shadow-sm hover:shadow-lg transition duration-300 hover:-translate-y-1">
+            <h3 class="text-lg font-semibold text-simvest-blue mb-1 flex items-center">
+                <i class="fa-solid fa-globe text-simvest-blue mr-2"></i> Mercados
             </h3>
-            <p class="text-gray-500 mb-3">Explora cotizaciones en tiempo real.</p>
-            <a href="{{ url_for('market.market') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+            <p class="text-gray-500 dark:text-gray-400 mb-3">Explora cotizaciones en tiempo real.</p>
+            <a href="{{ url_for('market.market') }}" class="inline-flex items-center text-simvest-blue hover:text-simvest-darkblue font-medium">
                 Ver mercados <i class="fa-solid fa-arrow-right ml-2"></i>
             </a>
         </div>
 
-        <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition duration-300 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-1 flex items-center">
-                <i class="fa-solid fa-clock-rotate-left text-green-500 mr-2"></i> Historial
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 
+                    shadow-sm hover:shadow-lg transition duration-300 hover:-translate-y-1">
+            <h3 class="text-lg font-semibold text-simvest-green mb-1 flex items-center">
+                <i class="fa-solid fa-clock-rotate-left text-simvest-green mr-2"></i> Historial
             </h3>
-            <p class="text-gray-500 mb-3">Consulta tus transacciones pasadas.</p>
-            <a href="{{ url_for('dashboard.history') }}" class="inline-flex items-center text-green-600 hover:text-green-800 font-medium">
+            <p class="text-gray-500 dark:text-gray-400 mb-3">Consulta tus transacciones pasadas.</p>
+            <a href="{{ url_for('dashboard.history') }}" class="inline-flex items-center text-simvest-green hover:text-emerald-700 font-medium">
                 Ver historial <i class="fa-solid fa-arrow-right ml-2"></i>
             </a>
         </div>
 
-        <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition duration-300 border border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-800 mb-1 flex items-center">
+        <div class="p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 
+                    shadow-sm hover:shadow-lg transition duration-300 hover:-translate-y-1">
+            <h3 class="text-lg font-semibold text-purple-600 mb-1 flex items-center">
                 <i class="fa-solid fa-graduation-cap text-purple-500 mr-2"></i> Aprender
             </h3>
-            <p class="text-gray-500 mb-3">Recursos educativos para invertir mejor.</p>
+            <p class="text-gray-500 dark:text-gray-400 mb-3">Recursos educativos para invertir mejor.</p>
             <a href="#" class="inline-flex items-center text-purple-600 hover:text-purple-800 font-medium">
                 Empezar ahora <i class="fa-solid fa-arrow-right ml-2"></i>
             </a>
         </div>
     </section>
 
-    <section class="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Mis Inversiones Simuladas</h2>
+    <!-- 📋 Tabla de inversiones -->
+    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition">
+        <h2 class="text-2xl font-bold text-simvest-blue dark:text-simvest-lightblue mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group"></i> Mis Inversiones Simuladas
+        </h2>
         {% if portafolio %}
         <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left text-gray-700 border-collapse">
-                <thead class="bg-gray-100 text-gray-600 uppercase text-xs font-semibold border-b">
+            <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-300 border-collapse">
+                <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300 uppercase text-xs font-semibold border-b">
                     <tr>
                         <th class="px-6 py-3">Símbolo</th>
                         <th class="px-6 py-3">Cantidad</th>
@@ -94,13 +123,12 @@
                 </thead>
                 <tbody>
                     {% for item in portafolio %}
-                    <tr class="border-b hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-semibold text-gray-900">{{ item.name }}</td>
+                    <tr class="border-b dark:border-gray-700 hover:bg-simvest-lightblue/10 transition">
+                        <td class="px-6 py-4 font-semibold">{{ item.name }}</td>
                         <td class="px-6 py-4">{{ "{:,.2f}".format(item.quantity) }}</td>
                         <td class="px-6 py-4">{{ item.purchase_price | currency }}</td>
                         <td class="px-6 py-4">{{ item.current_price | currency }}</td>
-                        
-                        {% set color = 'text-green-600' if item.gain_loss >= 0 else 'text-red-600' %}
+                        {% set color = 'text-simvest-green' if item.gain_loss >= 0 else 'text-simvest-red' %}
                         <td class="px-6 py-4 font-semibold {{ color }}">
                             {{ item.gain_loss | currency }}
                             ({{ "{:,.2f}".format(item.percent_change) }}%)
@@ -115,9 +143,9 @@
                                        max="{{ item.quantity }}"
                                        step="any"
                                        value="{{ item.quantity }}"
-                                       class="w-20 border border-gray-300 rounded-md p-1 text-sm text-right focus:ring focus:ring-blue-200">
+                                       class="w-20 border border-gray-300 dark:border-gray-600 rounded-md p-1 text-sm text-right focus:ring focus:ring-simvest-blue/30 focus:outline-none">
                                 <button type="submit"
-                                        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md text-xs shadow-sm transition">
+                                        class="bg-simvest-red hover:bg-red-700 text-white font-semibold py-1 px-3 rounded-md text-xs shadow-sm transition">
                                     Vender
                                 </button>
                             </form>
@@ -128,20 +156,19 @@
             </table>
         </div>
         {% else %}
-        <p class="text-gray-600 italic">
+        <p class="text-gray-600 dark:text-gray-400 italic">
             Aún no tienes inversiones. 💡
-            <a href="{{ url_for('market.market') }}" class="text-blue-500 hover:underline">Comienza en el Mercado</a>.
+            <a href="{{ url_for('market.market') }}" class="text-simvest-blue hover:underline">Comienza en el Mercado</a>.
         </p>
         {% endif %}
     </section>
 
 </main>
 
-<script src="https://cdn.jsdelivr.npm/chart.js"></script>
+<!-- 📈 Chart.js -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('portfolioChart').getContext('2d');
-
     const labels = {{ portfolio_history["labels"] | tojson | safe }};
     const data = {{ portfolio_history["values"] | tojson | safe }};
 
@@ -153,13 +180,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Valor del Portafolio',
                 data: data,
                 fill: true,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                tension: 0.3,
+                borderColor: '#2563EB',
+                backgroundColor: 'rgba(37, 99, 235, 0.15)',
+                tension: 0.35,
                 pointRadius: 4,
-                pointBackgroundColor: '#3b82f6',
-                pointBorderColor: '#ffffff',
-                pointBorderWidth: 2
+                pointBackgroundColor: '#3B82F6',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
             }]
         },
         options: {
@@ -170,23 +197,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     mode: 'index', 
                     intersect: false,
                     callbacks: {
-                        label: function(context) {
-                            return `Valor: $${context.parsed.y.toLocaleString()}`;
-                        }
+                        label: context => `Valor: $${context.parsed.y.toLocaleString()}`
                     }
                 }
             },
             scales: {
                 y: { 
-                    beginAtZero: false, 
-                    ticks: { 
-                        callback: value => '$' + value.toLocaleString() 
-                    } 
-                }
+                    ticks: { callback: value => '$' + value.toLocaleString() },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: { grid: { display: false } }
             }
         }
     });
 });
 </script>
-
 {% endblock %}

@@ -2,87 +2,93 @@
 
 {% block styles %}
 <style>
-    /* Estilos generales */
-    .category-tab {
-        color: #374151;
-        background-color: transparent;
-    }
-    .category-tab:hover {
-        background-color: #e5e7eb;
-    }
-    .category-tab.active-tab {
-        color: #ffffff;
-        background-color: #2563eb;
-        font-weight: 600;
-    }
+/* Tabs */
+.category-tab {
+    @apply text-gray-700 dark:text-gray-300 bg-transparent transition-all duration-200;
+}
+.category-tab:hover {
+    @apply bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300;
+}
+.category-tab.active-tab {
+    @apply bg-blue-600 text-white font-semibold shadow-md;
+}
 
-    /* Tarjetas minimalistas */
-    .asset-card {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 1rem;
-        padding: 2rem 1.5rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
+/* Cards */
+.asset-card {
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid;
+}
+.asset-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 6px 14px rgba(37,99,235,0.15);
+}
 
-    .asset-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
-        border-color: #2563eb;
-    }
+/* Dark mode */
+.dark .asset-card {
+    color: #f3f4f6;
+}
 
-    .asset-name {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.25rem;
-    }
+/* Asset text */
+.asset-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.asset-symbol {
+    font-size: 0.9rem;
+    font-family: monospace;
+}
 
-    .asset-symbol {
-        font-size: 0.9rem;
-        color: #6b7280;
-        font-family: monospace;
-    }
-
-    /* Layout */
-    .asset-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1rem;
-    }
-
-    .page-title {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 1.5rem;
-    }
+/* Grid layout */
+.asset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.2rem;
+}
 </style>
 {% endblock styles %}
 
 {% block content %}
-
-<div class="container mx-auto mt-10 p-5">
-    <h1 class="page-title">Mercado de Inversión</h1>
+<div class="container mx-auto mt-10 px-5" data-aos="fade-up">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Mercado de Inversión</h1>
 
     <!-- Categorías -->
-    <nav id="category-tabs" class="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-xl shadow-inner mb-6">
-        <button data-category="all" class="category-tab active-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">Todos</button>
-        <button data-category="acciones" class="category-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">Acciones</button>
-        <button data-category="fondos" class="category-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">Fondos</button>
-        <button data-category="etfs" class="category-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">ETFs</button>
-        <button data-category="renta-fija" class="category-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">Renta Fija</button>
-        <button data-category="crypto" class="category-tab text-sm font-medium px-4 py-2 rounded-lg transition-colors">Criptomonedas</button>
+    <nav id="category-tabs" class="flex flex-wrap gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner mb-6">
+        <button data-category="all" class="category-tab active-tab text-sm font-medium px-4 py-2 rounded-lg">Todos</button>
+        <button data-category="acciones" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Acciones</button>
+        <button data-category="fondos" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Fondos</button>
+        <button data-category="etfs" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">ETFs</button>
+        <button data-category="renta-fija" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Renta Fija</button>
+        <button data-category="crypto" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Criptomonedas</button>
     </nav>
+
+    <!-- Buscador -->
+    <div class="mb-6">
+        <input id="search-bar" 
+               type="text" 
+               placeholder="🔍 Buscar activo o símbolo..."
+               class="w-full sm:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition" />
+    </div>
 
     <!-- Lista de activos -->
     <div id="product-grid" class="asset-grid">
+        {% set category_colors = {
+            'acciones': 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+            'fondos': 'border-amber-500 bg-amber-50 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
+            'etfs': 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300',
+            'renta-fija': 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300',
+            'crypto': 'border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900 text-fuchsia-700 dark:text-fuchsia-300'
+        } %}
         {% for product in market_universe %}
-        <div class="asset-card"
+        <div class="asset-card {{ category_colors.get(product.category, 'border-gray-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100') }}"
              data-category="{{ product.category }}"
+             data-name="{{ product.name|lower }}"
+             data-symbol="{{ product.symbol|lower }}"
              onclick="window.location.href='{{ url_for('market.asset_detail', symbol=product.symbol) }}'">
             <h3 class="asset-name">{{ product.name }}</h3>
             <p class="asset-symbol">{{ product.symbol }}</p>
@@ -90,7 +96,6 @@
         {% endfor %}
     </div>
 </div>
-
 {% endblock content %}
 
 {% block scripts %}
@@ -98,22 +103,31 @@
 document.addEventListener('DOMContentLoaded', function() {
     const tabs = document.querySelectorAll('.category-tab');
     const products = document.querySelectorAll('.asset-card');
+    const searchBar = document.getElementById('search-bar');
 
+    // Filtrado por categoría
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const category = tab.getAttribute('data-category');
             tabs.forEach(t => t.classList.remove('active-tab'));
             tab.classList.add('active-tab');
-
-            products.forEach(product => {
-                if (category === 'all' || product.getAttribute('data-category') === category) {
-                    product.style.display = 'block';
-                } else {
-                    product.style.display = 'none';
-                }
-            });
+            filterProducts(category, searchBar.value.toLowerCase());
         });
     });
+
+    // Filtrado por búsqueda
+    searchBar.addEventListener('input', () => {
+        const activeCategory = document.querySelector('.category-tab.active-tab').getAttribute('data-category');
+        filterProducts(activeCategory, searchBar.value.toLowerCase());
+    });
+
+    function filterProducts(category, searchText) {
+        products.forEach(product => {
+            const matchesCategory = category === 'all' || product.getAttribute('data-category') === category;
+            const matchesSearch = product.getAttribute('data-name').includes(searchText) || product.getAttribute('data-symbol').includes(searchText);
+            product.style.display = matchesCategory && matchesSearch ? 'block' : 'none';
+        });
+    }
 
     // Activar "Todos" por defecto
     document.querySelector('.category-tab[data-category="all"]').click();

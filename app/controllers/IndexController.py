@@ -8,7 +8,7 @@ from app import app
 def index():
     # Si el usuario ya está autenticado (logueado), lo redirigimos directamente a su dashboard (/home)
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('dashboard.dashboard'))
         
     # Si no está autenticado, mostramos la landing page (Index/index.html)
     return render_template('Index/index.html')
