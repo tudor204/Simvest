@@ -20,35 +20,21 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-    # Capital inicial de simulación
+    password = db.Column(db.String(60), nullable=False)   
     capital = db.Column(db.Float, nullable=False, default=10000.00) 
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
 
-class Holding(db.Model):
-    """
-    Representa las POSICIONES ACTIVAS (los activos que el usuario posee actualmente).
-    Nota: Se eliminó 'is_sold' ya que el estado se deduce de la cantidad.
-    """
+class Holding(db.Model):    
     __tablename__ = 'holdings'
-    id = db.Column(db.Integer, primary_key=True)
-    
-    # Clave Foránea
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    
-    # Datos del activo
-    symbol = db.Column(db.String(10), nullable=False) # Ej: 'AAPL'
-    name = db.Column(db.String(100), nullable=False) 
-    
-    quantity = db.Column(db.Float, nullable=False)
-    
-    # Este campo debe reflejar el precio promedio ponderado de compra
+    id = db.Column(db.Integer, primary_key=True) 
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)    
+    symbol = db.Column(db.String(10), nullable=False) 
+    name = db.Column(db.String(100), nullable=False)     
+    quantity = db.Column(db.Float, nullable=False)    
     purchase_price = db.Column(db.Float, nullable=False) 
-    purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    # Relaciones
+    purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)    
     user = db.relationship('User', backref=db.backref('holdings', lazy=True))
 
     def __repr__(self):

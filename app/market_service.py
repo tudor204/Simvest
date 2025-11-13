@@ -83,14 +83,12 @@ def fetch_live_market_data():
     now = time.time()
     if now - market_cache["timestamp"] < CACHE_DURATION:
         return market_cache["list"], market_cache["dict"]
-
-    products_list, products_dict = [], {}
+    products_list, products_dict = [], {}    
     
     # Procesar activos en lotes más pequeños para evitar timeouts
     batch_size = 20
     for i in range(0, len(MARKET_UNIVERSE), batch_size):
-        batch = MARKET_UNIVERSE[i:i + batch_size]
-        
+        batch = MARKET_UNIVERSE[i:i + batch_size]        
         try:
             # Descargar datos del batch actual
             symbols = [a['symbol'] for a in batch]
