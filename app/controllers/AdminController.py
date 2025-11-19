@@ -5,7 +5,7 @@ from app.models import db, User
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-@app.route('/admin/users')
+@admin_bp.route('/admin/users')
 @login_required
 def admin_users():
     """Panel de administración de usuarios (solo para admins)"""
@@ -16,7 +16,7 @@ def admin_users():
     users = User.query.all()
     return render_template('Admin/users.html', users=users)
 
-@app.route('/admin/user/<int:user_id>/toggle', methods=['POST'])
+@admin_bp.route('/admin/user/<int:user_id>/toggle', methods=['POST'])
 @login_required
 def toggle_user_status(user_id):
     """Activar/desactivar usuario"""

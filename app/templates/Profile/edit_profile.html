@@ -19,7 +19,7 @@
             </div>
             
             <div class="p-8">
-                <form method="POST" action="{{ url_for('edit_profile') }}">
+                <form method="POST" action="{{ url_for('profile.edit_profile') }}">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <a href="{{ url_for('profile') }}" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition">
+                        <a href="{{ url_for('profile.profile') }}" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition">
                             Cancelar
                         </a>
                         <button type="submit" class="bg-simvest-blue hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition duration-200 transform hover:scale-[1.02]">
@@ -111,7 +111,7 @@
             </div>
 
             <div class="p-8">
-                <form method="POST" action="{{ url_for('change_password') }}">
+                <form method="POST" action="{{ url_for('profile.change_password') }}">
                     <div class="grid grid-cols-1 gap-6 max-w-2xl">
                         <div>
                             <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

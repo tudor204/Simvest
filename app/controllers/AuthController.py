@@ -6,7 +6,7 @@ from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@app.route('/logout')
+@auth_bp.route('/logout')
 @login_required
 def logout():
     """Cerrar sesión del usuario"""
@@ -14,7 +14,7 @@ def logout():
     flash('Has cerrado sesión correctamente.', 'success')
     return redirect(url_for('login'))
 
-@app.route('/account/delete', methods=['POST'])
+@auth_bp.route('/account/delete', methods=['POST'])
 @login_required
 def delete_account():
     """Eliminar cuenta de usuario (borrado lógico)"""

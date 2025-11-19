@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from .config import Config
-from flask_migrate import Migrate # Ya está importado, ¡bien!
+from flask_migrate import Migrate
 
 # =========================================================
 # 0. Cargar variables de entorno
@@ -27,17 +27,20 @@ app.config.from_object(Config)
 
 db.init_app(app)
 bcrypt.init_app(app)
+
+# --- CONFIGURACIÓN LOGIN ---
 login_manager.init_app(app)
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# ⚠️ SOLUCIÓN: INICIALIZAR FLASK-MIGRATE AQUÍ
+login_manager.login_view = 'auth.login' # Redirección automática si no está logueado
+login_manager.login_message_category = 'error' # Estilo de mensaje flash
+# ---------------------------
+
 migrate.init_app(app, db)
-# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # =========================================================
 # 3. Importar modelos
 # =========================================================
-# Importar todos los modelos *después* de que db se inicialice (necesario para Migrate)
-from app.models import User, Holding, Transaction # Asegúrate de que Transaction esté aquí
+# Importar después de inicializar db para evitar referencias circulares
+from app.models import User, Holding, Transaction 
 
 # =========================================================
 # 4. Registrar blueprints
@@ -57,6 +60,7 @@ app.register_blueprint(admin_bp)
 from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
 
+
 from app.controllers import IndexController, RegisterController, LoginController
 
 # =========================================================
@@ -64,9 +68,7 @@ from app.controllers import IndexController, RegisterController, LoginController
 # =========================================================
 @app.template_filter('currency')
 def currency_filter(value):
-    """
-    Formatea un valor numérico como una cadena de moneda USD.
-    """
+    """Formatea un valor numérico como una cadena de moneda USD."""
     try:
         val = float(value)
         return f"${val:,.2f}"

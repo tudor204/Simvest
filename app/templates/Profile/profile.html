@@ -42,7 +42,7 @@
                             {% endif %}
                         </div>
 
-                        <a href="{{ url_for('edit_profile') }}" 
+                        <a href="{{ url_for('profile.edit_profile') }}" 
                            class="w-full block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-200 shadow-sm">
                            <i class="fa-solid fa-pen-to-square mr-2"></i> Editar Perfil
                         </a>
@@ -69,8 +69,8 @@
                         <i class="fa-solid fa-chart-pie"></i>
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Invertido</p>
-                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1" id="total-invested">
-                        <i class="fa-solid fa-circle-notch fa-spin text-sm text-gray-400"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                        ${{ "%.2f"|format(total_invested) }}
                     </h3>
                 </div>
 
@@ -79,8 +79,8 @@
                         <i class="fa-solid fa-right-left"></i>
                     </div>
                     <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Transacciones</p>
-                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1" id="transactions-count">
-                        <i class="fa-solid fa-circle-notch fa-spin text-sm text-gray-400"></i>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                        {{ transactions_count }}
                     </h3>
                 </div>
             </div>
@@ -150,7 +150,7 @@
     // Cargar estadísticas via AJAX
     // Agregamos un pequeño delay artificial o manejo de errores para suavidad
     document.addEventListener("DOMContentLoaded", function() {
-        fetch("{{ url_for('user_stats') }}") // Asegúrate que esta ruta exista en tu backend
+        fetch("{{ url_for('profile.user_stats') }}") // Asegúrate que esta ruta exista en tu backend
             .then(response => {
                 if (!response.ok) throw new Error('Error en la red');
                 return response.json();

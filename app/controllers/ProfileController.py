@@ -1,113 +1,118 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime
-from app import app
-from app.models import db, User
+from app import db # No importes 'app' aquí para evitar ciclos
+from app.models import User
 
+# Definimos el Blueprint
 profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
-@app.route('/profile', methods=['GET'])
+@profile_bp.route('/', methods=['GET'])
 @login_required
 def profile():
     """Página de perfil del usuario"""
-    return render_template('Profile/profile.html', user=current_user)
+    
+    # 1. Calcular Total Invertido (Sumar cantidad * precio de cada holding)
+    total_invested = 0
+    # Asegúrate de que tu modelo User tiene la relación 'holdings'
+    if hasattr(current_user, 'holdings'):
+        for holding in current_user.holdings:
+            total_invested += (holding.quantity * holding.purchase_price)
+            
+    # 2. Contar Transacciones
+    transactions_count = 0
+    # Asegúrate de que tu modelo User tiene la relación 'transactions'
+    if hasattr(current_user, 'transactions'):
+        transactions_count = len(current_user.transactions)
 
-@app.route('/profile/edit', methods=['GET', 'POST'])
+    # 3. Enviamos las variables a la plantilla
+    return render_template('Profile/profile.html', 
+                           user=current_user,
+                           total_invested=total_invested,
+                           transactions_count=transactions_count)
+
+@profile_bp.route('/edit', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
     """Editar perfil de usuario"""
     if request.method == 'POST':
         try:
-            # Actualizar campos básicos
+            # Actualizar datos básicos
             current_user.first_name = request.form.get('first_name', current_user.first_name)
             current_user.last_name = request.form.get('last_name', current_user.last_name)
             current_user.bio = request.form.get('bio', current_user.bio)
-            
-            # Actualizar preferencias
             current_user.language = request.form.get('language', current_user.language)
             current_user.timezone = request.form.get('timezone', current_user.timezone)
             
-            # Verificar si el email ya existe (si se cambió)
+            # Verificaciones de Email/Username (Unique constraints)
             new_email = request.form.get('email')
             if new_email and new_email != current_user.email:
-                existing_user = User.query.filter_by(email=new_email).first()
-                if existing_user:
-                    flash('El email ya está en uso por otro usuario.', 'error')
-                    return redirect(url_for('edit_profile'))
+                if User.query.filter_by(email=new_email).first():
+                    flash('El email ya está en uso.', 'error')
+                    return redirect(url_for('profile.edit_profile'))
                 current_user.email = new_email
             
-            # Verificar si el username ya existe (si se cambió)
             new_username = request.form.get('username')
             if new_username and new_username != current_user.username:
-                existing_user = User.query.filter_by(username=new_username).first()
-                if existing_user:
-                    flash('El nombre de usuario ya está en uso.', 'error')
-                    return redirect(url_for('edit_profile'))
+                if User.query.filter_by(username=new_username).first():
+                    flash('El usuario ya existe.', 'error')
+                    return redirect(url_for('profile.edit_profile'))
                 current_user.username = new_username
             
             db.session.commit()
             flash('Perfil actualizado correctamente.', 'success')
-            return redirect(url_for('profile'))
+            return redirect(url_for('profile.profile')) # Nota el prefijo 'profile.'
             
         except Exception as e:
             db.session.rollback()
             flash('Error al actualizar el perfil.', 'error')
-            app.logger.error(f'Error updating profile: {e}')
+            print(f"Error: {e}") # Usa print o current_app.logger
     
     return render_template('Profile/edit_profile.html', user=current_user)
 
-@app.route('/profile/change-password', methods=['POST'])
+@profile_bp.route('/change-password', methods=['POST'])
 @login_required
 def change_password():
-    """Cambiar contraseña del usuario"""
-    current_password = request.form.get('current_password')
-    new_password = request.form.get('new_password')
-    confirm_password = request.form.get('confirm_password')
+    """Cambiar contraseña"""
+    current_pw = request.form.get('current_password')
+    new_pw = request.form.get('new_password')
+    confirm_pw = request.form.get('confirm_password')
     
-    if not current_user.check_password(current_password):
+    if not current_user.check_password(current_pw):
         flash('La contraseña actual es incorrecta.', 'error')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('profile.edit_profile'))
     
-    if new_password != confirm_password:
+    if new_pw != confirm_pw:
         flash('Las nuevas contraseñas no coinciden.', 'error')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('profile.edit_profile'))
     
-    if len(new_password) < 6:
-        flash('La contraseña debe tener al menos 6 caracteres.', 'error')
-        return redirect(url_for('edit_profile'))
-    
-    current_user.set_password(new_password)
+    current_user.set_password(new_pw)
     db.session.commit()
     
-    flash('Contraseña cambiada correctamente.', 'success')
-    return redirect(url_for('profile'))
+    flash('Contraseña actualizada. Inicia sesión de nuevo.', 'success')
+    return redirect(url_for('profile.profile'))
 
-@app.route('/profile/upload-avatar', methods=['POST'])
-@login_required
-def upload_avatar():
-    """Subir avatar del usuario (versión básica - URLs)"""
-    avatar_url = request.form.get('avatar_url')
-    if avatar_url:
-        current_user.profile_picture = avatar_url
-        db.session.commit()
-        flash('Avatar actualizado correctamente.', 'success')
-    else:
-        flash('URL de avatar no válida.', 'error')
-    
-    return redirect(url_for('profile'))
-
-@app.route('/api/user/stats')
+# -------------------------------------------------------
+# ⚡ RUTA API PARA EL AJAX DEL FRONTEND (CORREGIDA)
+# -------------------------------------------------------
+@profile_bp.route('/api/stats') 
 @login_required
 def user_stats():
-    """API para obtener estadísticas del usuario"""
-    # Ejemplo: contar holdings y transacciones
-    holdings_count = len(current_user.holdings)
-    transactions_count = len(current_user.transactions)
+    """API JSON para las tarjetas de estadísticas"""
     
+    # 1. Calcular Total Invertido
+    # Asumiendo que tienes una relación 'holdings' o 'transactions'
+    # Ajusta esta lógica según tu modelo real de Holding
+    total_invested = 0.0
+    if hasattr(current_user, 'holdings'):
+        for holding in current_user.holdings:
+            # Ejemplo: cantidad * precio_promedio
+            total_invested += (holding.quantity * holding.avg_price)
+            
+    # 2. Contar transacciones
+    transactions_count = len(current_user.transactions) if hasattr(current_user, 'transactions') else 0
+
     return jsonify({
-        'username': current_user.username,
-        'capital': current_user.capital,
-        'holdings_count': holdings_count,
+        'total_invested': total_invested,  # ¡Es vital para el JS!
         'transactions_count': transactions_count,
-        'member_since': current_user.created_at.strftime('%Y-%m-%d') if current_user.created_at else 'N/A'
+        'capital': current_user.capital
     })
