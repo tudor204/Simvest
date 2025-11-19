@@ -1,11 +1,10 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, current_user
 from app import app
-from app.models  import User, bcrypt # Importar modelo y bcrypt
+from app.models import User  # Importar modelo
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Si el usuario ya está logueado, redirige a la página principal
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.dashboard'))
 
@@ -16,8 +15,8 @@ def login():
         # 1. Buscar el usuario por email
         user = User.query.filter_by(email=email).first()
         
-        # 2. Verificar si el usuario existe y si la contraseña es correcta
-        if user and bcrypt.check_password_hash(user.password, password):
+        # 2. Verificar si el usuario existe y si la contraseña es correcta usando el método check_password
+        if user and user.check_password(password):
             # 3. Iniciar sesión y establecer la cookie 'remember me'
             login_user(user, remember=True)
             

@@ -1,19 +1,19 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, current_user
 from app import app
-from app.models  import db, bcrypt, User # Importar extensiones y modelo
+from app.models import db, User  # Importar extensiones y modelo
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    # Si el usuario ya está logueado, redirige a la página principal
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.dashboard'))
 
     if request.method == 'POST':
-        # Obtener datos del formulario
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
+        first_name = request.form.get('first_name', '')  # Nuevo campo, opcional
+        last_name = request.form.get('last_name', '')    # Nuevo campo, opcional
 
         # 1. Verificar si el usuario o email ya existe
         existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
@@ -21,16 +21,19 @@ def register():
             flash('El nombre de usuario o el correo electrónico ya está en uso.', 'error')
             return redirect(url_for('register'))
 
-        # 2. Hashear la contraseña de forma segura
-        # La función generate_password_hash usa bcrypt por defecto
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        # 2. Crear el nuevo usuario con los nuevos campos
+        user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name
+        )
+        user.set_password(password)  # Esto establece el password_hash
 
-        # 3. Crear y guardar el nuevo usuario
-        user = User(username=username, email=email, password=hashed_password)
         db.session.add(user)
         db.session.commit()
         
-        # 4. Loguear al usuario automáticamente
+        # 3. Loguear al usuario automáticamente
         login_user(user)
         flash(f'¡Cuenta creada con éxito para {username}!', 'success')
         return redirect(url_for('dashboard.dashboard'))

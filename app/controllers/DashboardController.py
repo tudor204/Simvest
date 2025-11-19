@@ -1,85 +1,105 @@
 from flask import Blueprint, render_template, url_for, flash, redirect
 from flask_login import login_required, current_user
 from app.market_service import fetch_live_market_data
-# Importaciones de Modelos (Asegúrate de importar Transaction)
-from app.models import Holding, Transaction # <<< CAMBIO CLAVE: Agregada Transaction
+from app.models import Holding, Transaction, db
 from datetime import datetime, timedelta
-# Para consultas rápidas de Transacciones
-from sqlalchemy import desc # <<< CAMBIO CLAVE: Agregada importación
-# yfinance y pandas se usan en el bloque de histórico, lo mantenemos.
+from sqlalchemy import desc
 import pandas as pd
 import yfinance as yf 
+from app import app
 
-# --- Definir Blueprint ---
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
 @dashboard_bp.route('/')
 @login_required
 def dashboard():
-    # 1. Obtener datos de la base de datos (RÁPIDO)
-    holdings = Holding.query.filter_by(user_id=current_user.id).all()
-    
-    # Obtener las últimas 20 transacciones para el historial
-    transaction_history = Transaction.query.filter_by(user_id=current_user.id)\
-                                     .order_by(desc(Transaction.timestamp))\
-                                     .limit(20).all() # <<< CAMBIO CLAVE: Consulta de Historial
-
-    # 2. Obtener datos del mercado en vivo (USA CACHÉ de 10 minutos)
     try:
-        # Esta llamada solo es lenta si la caché de 10 minutos está expirada.
-        _, products_dict = fetch_live_market_data() 
-    except Exception as e:
-        print(f"ERROR: Fallo al obtener datos del mercado (Caché): {e}")
-        products_dict = {}
-
-    valor_portafolio = 0
-    portafolio_data = []
-
-    # --- 3. Calcular valores actuales y portafolio_data ---
-    for h in holdings:
-        symbol = h.symbol
-        market_info = products_dict.get(symbol, {})
+        # 1. Obtener datos de la base de datos
+        holdings = Holding.query.filter_by(user_id=current_user.id).all()
         
-        # Usamos el precio del mercado cacheado, con el precio de compra como fallback
-        current_price = market_info.get('price', h.purchase_price)
+        transaction_history = Transaction.query.filter_by(user_id=current_user.id)\
+                                         .order_by(desc(Transaction.timestamp))\
+                                         .limit(20).all()
 
+        # 2. Obtener datos del mercado en vivo
         try:
-            current_price = float(current_price)
-        except (TypeError, ValueError):
-            current_price = h.purchase_price
+            _, products_dict = fetch_live_market_data() 
+        except Exception as e:
+            app.logger.error(f"Error fetching market data: {e}")
+            products_dict = {}
 
-        # Cálculos de P&L
-        current_value = current_price * h.quantity
-        gain_loss = current_value - (h.purchase_price * h.quantity)
-        percent_change = (gain_loss / (h.purchase_price * h.quantity)) * 100 if h.purchase_price * h.quantity > 0 else 0
+        valor_portafolio = 0
+        portafolio_data = []
+        total_invested = 0  # Para cálculo más preciso de P&L
 
-        valor_portafolio += current_value
+        # 3. Calcular valores actuales
+        for h in holdings:
+            symbol = h.symbol
+            market_info = products_dict.get(symbol, {})
+            
+            current_price = market_info.get('price', h.purchase_price)
+            try:
+                current_price = float(current_price)
+            except (TypeError, ValueError):
+                current_price = h.purchase_price
 
-        portafolio_data.append({
-            'id': h.id,
-            'symbol': h.symbol,
-            'name': market_info.get('name', h.name),
-            'quantity': h.quantity,
-            'purchase_price': h.purchase_price,
-            'current_price': current_price,
-            'gain_loss': gain_loss,
-            'percent_change': percent_change,
-            'total_value': current_value
-        })
+            current_value = current_price * h.quantity
+            invested_value = h.purchase_price * h.quantity
+            gain_loss = current_value - invested_value
+            
+            # Protección contra división por cero
+            if invested_value > 0:
+                percent_change = (gain_loss / invested_value) * 100
+            else:
+                percent_change = 0.0
 
-    current_capital = float(current_user.capital)
-    total_capital = current_capital + valor_portafolio
-    
-    # Lógica de P&L global (Asumimos 10000.00 de capital inicial)
-    initial_capital_value = 10000.00
-    overall_pnl = total_capital - initial_capital_value
-    overall_pnl_pct = (overall_pnl / initial_capital_value * 100) if initial_capital_value > 0 else 0.0
+            valor_portafolio += current_value
+            total_invested += invested_value
 
+            portafolio_data.append({
+                'id': h.id,
+                'symbol': h.symbol,
+                'name': market_info.get('name', h.name),
+                'quantity': h.quantity,
+                'purchase_price': h.purchase_price,
+                'current_price': current_price,
+                'gain_loss': gain_loss,
+                'percent_change': percent_change,
+                'total_value': current_value,
+                'invested_value': invested_value
+            })
 
-    # --- 4. Obtener datos históricos para el gráfico (Manteniendo la lógica optimizada) ---
-    # Nota: Si el rendimiento sigue siendo un problema, este es el bloque a mover 
-    # a una llamada asíncrona (AJAX) o a una tarea en segundo plano.
-    num_days = 4
+        current_capital = float(current_user.capital)
+        total_capital = current_capital + valor_portafolio
+        
+        # Cálculo de P&L global más preciso
+        initial_capital_value = 10000.00  # Considerar hacer esto configurable
+        overall_pnl = total_capital - initial_capital_value
+        overall_pnl_pct = (overall_pnl / initial_capital_value * 100) if initial_capital_value > 0 else 0.0
+
+        # 4. Datos históricos para el gráfico
+        portfolio_history = get_portfolio_history(portafolio_data, current_capital)
+
+        return render_template(
+            'Dashboard/dashboard.html',
+            current_capital=current_capital,
+            valor_portafolio=valor_portafolio,
+            total_capital=total_capital,
+            portafolio=portafolio_data,
+            portfolio_history=portfolio_history,
+            transaction_history=transaction_history,
+            overall_pnl=overall_pnl,
+            overall_pnl_pct=overall_pnl_pct,
+            total_invested=total_invested  # Nuevo: valor total invertido
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Error in dashboard: {e}")
+        flash('Error al cargar el dashboard. Por favor, intenta nuevamente.', 'error')
+        return render_template('Dashboard/dashboard.html', error=True)
+
+def get_portfolio_history(portafolio_data, current_capital, num_days=4):
+    """Función auxiliar para obtener datos históricos del portafolio"""
     portfolio_history = {"labels": [], "values": []}
     
     # Generar etiquetas de fechas
@@ -89,92 +109,68 @@ def dashboard():
         date_labels.append(day.strftime("%Y-%m-%d"))
     portfolio_history["labels"] = date_labels
 
-    if portafolio_data:
-        # Obtener todos los símbolos del portafolio
-        symbols_in_portfolio = [item['symbol'] for item in portafolio_data]
-        quantity_map = {item['symbol']: item['quantity'] for item in portafolio_data}
+    if not portafolio_data:
+        portfolio_history["values"] = [round(current_capital, 2)] * num_days
+        return portfolio_history
 
-        try:
-            start_date = (datetime.now() - timedelta(days=num_days)).strftime('%Y-%m-%d')
-            
-            # ¡Una sola llamada a la API para todos los símbolos!
-            # Mantenemos esta lógica optimizada para la consulta de varios símbolos
-            hist_data = yf.download(
-                symbols_in_portfolio, 
-                start=start_date, 
-                interval="1d"
-            )
+    symbols_in_portfolio = [item['symbol'] for item in portafolio_data]
+    quantity_map = {item['symbol']: item['quantity'] for item in portafolio_data}
 
-            daily_portfolio_values = [0.0] * num_days
-            
-            if not hist_data.empty:
-                prices_df = hist_data['Close'].tail(num_days)
+    try:
+        start_date = (datetime.now() - timedelta(days=num_days)).strftime('%Y-%m-%d')
+        
+        hist_data = yf.download(
+            symbols_in_portfolio, 
+            start=start_date, 
+            interval="1d",
+            progress=False
+        )
 
-                for symbol in symbols_in_portfolio:
-                    quantity = quantity_map[symbol]
+        daily_portfolio_values = [0.0] * num_days
+        
+        if not hist_data.empty:
+            prices_df = hist_data['Close'].tail(num_days)
+
+            for symbol in symbols_in_portfolio:
+                quantity = quantity_map[symbol]
+                
+                if len(symbols_in_portfolio) == 1:
+                    price_series = prices_df
+                elif symbol in prices_df.columns:
+                    price_series = prices_df[symbol]
+                else:
+                    continue
                     
-                    # Adaptación por si yf.download devuelve solo una columna (un solo activo)
-                    if len(symbols_in_portfolio) == 1 and symbol in prices_df.name:
-                        price_series = prices_df
-                    elif len(symbols_in_portfolio) > 1 and symbol in prices_df.columns:
-                        price_series = prices_df[symbol]
-                    else:
-                        continue # Saltar si no se encuentra el símbolo
-                        
-                    asset_daily_values = (price_series * quantity).tolist()
-                                        
-                    # Rellenar días faltantes (si yf no devuelve 7 días)
-                    if len(asset_daily_values) < num_days:
-                        # Rellenar con el primer valor conocido para los días faltantes
-                        missing_days = num_days - len(asset_daily_values)
-                        asset_daily_values = ([asset_daily_values[0]] * missing_days) + asset_daily_values
+                asset_daily_values = (price_series * quantity).tolist()
+                                    
+                if len(asset_daily_values) < num_days:
+                    missing_days = num_days - len(asset_daily_values)
+                    asset_daily_values = ([asset_daily_values[0]] * missing_days) + asset_daily_values
 
-                    # Sumar los valores de este activo al total diario
-                    for i in range(num_days):
+                for i in range(num_days):
+                    if i < len(asset_daily_values):
                         daily_portfolio_values[i] += asset_daily_values[i]
 
-                # --- Combinar con capital ---
-                portfolio_history["values"] = [
-                    round(current_capital + daily_value, 2) for daily_value in daily_portfolio_values
-                ]
+            portfolio_history["values"] = [
+                round(current_capital + daily_value, 2) for daily_value in daily_portfolio_values
+            ]
+        else:
+            current_total = sum(item['total_value'] for item in portafolio_data)
+            portfolio_history["values"] = [round(current_capital + current_total, 2)] * num_days
 
-        except Exception as e:
-            print(f"ERROR: Fallo al obtener datos históricos para el gráfico: {e}")
-            # Fallback: si la API falla, mostrar solo el capital
-            portfolio_history["values"] = [round(current_capital, 2)] * num_days
-            
-    else:
-        # Si no hay holdings, el gráfico solo muestra el capital
-        portfolio_history["values"] = [round(current_capital, 2)] * num_days
+    except Exception as e:
+        app.logger.error(f"Error in get_portfolio_history: {e}")
+        current_total = sum(item['total_value'] for item in portafolio_data)
+        portfolio_history["values"] = [round(current_capital + current_total, 2)] * num_days
+    
+    return portfolio_history
 
-
-    # --- Renderizar Plantilla ---
-    return render_template(
-        'Dashboard/dashboard.html',
-        current_capital=current_capital,
-        valor_portafolio=valor_portafolio,
-        total_capital=total_capital,
-        portafolio=portafolio_data,
-        portfolio_history=portfolio_history,
-        transaction_history=transaction_history, # <<< NUEVO: Historial de Transacciones
-        overall_pnl=overall_pnl,
-        overall_pnl_pct=overall_pnl_pct
-    )
-
-
-@dashboard_bp.route('/history', methods=['GET']) # <<< NUEVA RUTA
+@dashboard_bp.route('/history')
 @login_required
 def history():
-    """
-    Muestra el historial completo de transacciones del usuario.
-    """
-    # Consulta todas las transacciones ordenadas por fecha descendente
-    # No hay límite de 20 aquí, mostramos todo el historial.
+    """Muestra el historial completo de transacciones"""
     all_transactions = Transaction.query.filter_by(user_id=current_user.id)\
                                      .order_by(desc(Transaction.timestamp))\
                                      .all()
 
-    return render_template(
-        'Dashboard/history.html', # <<< NUEVA PLANTILLA
-        transactions=all_transactions
-    )
+    return render_template('Dashboard/history.html', transactions=all_transactions)

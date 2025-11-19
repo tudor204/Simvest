@@ -13,11 +13,3 @@ def index():
     # Si no está autenticado, mostramos la landing page (Index/index.html)
     return render_template('Index/index.html')
 
-# Ruta para cerrar sesión
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('Has cerrado sesión exitosamente.', 'info')
-    # Redirigimos al usuario a la página de inicio (que ahora redirigirá a /index ya que no estará logueado)
-    return redirect(url_for('index'))

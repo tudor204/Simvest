@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from . import db, bcrypt, login_manager 
 from datetime import datetime
 from sqlalchemy import func # Importamos func para usar current_timestamp
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- Configuración de Flask-Login ---
 login_manager.login_view = 'login'
@@ -17,11 +18,58 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
+    
+    # ID y datos básicos de autenticación
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)   
-    capital = db.Column(db.Float, nullable=False, default=10000.00) 
+    password_hash = db.Column(db.String(128), nullable=False)  # Cambiado de password a password_hash
+    
+    # Datos personales (nuevos campos)
+    first_name = db.Column(db.String(50))
+    last_name = db.Column(db.String(50))
+    
+    # Sistema de trading
+    capital = db.Column(db.Float, nullable=False, default=10000.00)
+    
+    # Metadatos y control (nuevos campos)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+    is_active = db.Column(db.Boolean, default=True)
+    is_verified = db.Column(db.Boolean, default=False)
+    
+    # Preferencias (nuevos campos)
+    profile_picture = db.Column(db.String(255))
+    bio = db.Column(db.Text)
+    language = db.Column(db.String(10), default='es')
+    timezone = db.Column(db.String(50), default='UTC')
+    
+    # Roles y permisos
+    role = db.Column(db.String(20), default='user')
+
+    # Métodos de seguridad para contraseñas
+    def set_password(self, password):
+        """Genera un hash seguro de la contraseña"""
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Verifica si la contraseña coincide con el hash almacenado"""
+        return check_password_hash(self.password_hash, password)
+
+    # Propiedad para compatibilidad (si algún código usa user.password)
+    @property
+    def password(self):
+        raise AttributeError('La contraseña no es un atributo legible')
+
+    @password.setter
+    def password(self, password):
+        self.set_password(password)
+
+    def get_full_name(self):
+        """Devuelve el nombre completo del usuario"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return self.username
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"

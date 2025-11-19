@@ -45,6 +45,15 @@ from app.models import User, Holding, Transaction # Asegúrate de que Transactio
 from app.controllers.MarketController import market_bp
 app.register_blueprint(market_bp)
 
+from app.controllers.AuthController import auth_bp
+app.register_blueprint(auth_bp)
+
+from app.controllers.ProfileController import profile_bp
+app.register_blueprint(profile_bp)
+
+from app.controllers.AdminController import admin_bp
+app.register_blueprint(admin_bp)
+
 from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
 

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Mi Perfil</h1>
+        <p class="text-gray-500 dark:text-gray-400">Gestiona tu información personal y revisa tus métricas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <div class="lg:col-span-4">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-24">
+                <div class="h-32 bg-gradient-to-r from-simvest-blue to-simvest-darkblue"></div>
+                
+                <div class="px-6 pb-8 relative">
+                    <div class="relative -mt-16 mb-4 flex justify-center">
+                        <div class="h-32 w-32 rounded-full ring-4 ring-white dark:ring-gray-800 bg-white p-1 shadow-md">
+                            <img src="{{ user.profile_picture or url_for('static', filename='images/default-avatar.png') }}" 
+                                 class="h-full w-full rounded-full object-cover" 
+                                 alt="Foto de perfil">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                            {{ user.get_full_name() or user.username }}
+                        </h2>
+                        <p class="text-sm text-simvest-blue dark:text-simvest-lightblue font-medium mb-4">
+                            @{{ user.username }}
+                        </p>
+
+                        <div class="flex justify-center gap-2 mb-6">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-200 border border-blue-100 dark:border-blue-800">
+                                <i class="fa-solid fa-user-tag mr-1"></i> {{ user.role or 'Inversor' }}
+                            </span>
+                            {% if user.is_verified %}
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-200 border border-green-100 dark:border-green-800">
+                                <i class="fa-solid fa-check-circle mr-1"></i> Verificado
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{{ url_for('edit_profile') }}" 
+                           class="w-full block bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-semibold py-2.5 px-4 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-200 shadow-sm">
+                           <i class="fa-solid fa-pen-to-square mr-2"></i> Editar Perfil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8 space-y-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded-full flex items-center justify-center mb-3 text-xl">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Capital Disponible</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1">
+                        ${{ "%.2f"|format(user.capital) }}
+                    </h3>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-blue-100 text-simvest-blue dark:bg-blue-900/30 dark:text-blue-400 rounded-full flex items-center justify-center mb-3 text-xl">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Invertido</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1" id="total-invested">
+                        <i class="fa-solid fa-circle-notch fa-spin text-sm text-gray-400"></i>
+                    </h3>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 flex flex-col items-center text-center hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 rounded-full flex items-center justify-center mb-3 text-xl">
+                        <i class="fa-solid fa-right-left"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Transacciones</p>
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mt-1" id="transactions-count">
+                        <i class="fa-solid fa-circle-notch fa-spin text-sm text-gray-400"></i>
+                    </h3>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 p-8">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                    <div class="bg-simvest-blue text-white p-2 rounded-lg">
+                        <i class="fa-regular fa-id-card"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Información Personal</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Nombre Completo</label>
+                        <p class="text-gray-800 dark:text-gray-200 font-medium">
+                            {{ user.first_name }} {{ user.last_name }} 
+                            {% if not user.first_name and not user.last_name %}
+                                <span class="italic text-gray-400">No especificado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Correo Electrónico</label>
+                        <p class="text-gray-800 dark:text-gray-200 font-medium">{{ user.email }}</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Idioma</label>
+                        <p class="text-gray-800 dark:text-gray-200 font-medium flex items-center gap-2">
+                            <i class="fa-solid fa-language text-gray-400"></i> {{ user.language or 'Español' }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Zona Horaria</label>
+                        <p class="text-gray-800 dark:text-gray-200 font-medium flex items-center gap-2">
+                            <i class="fa-regular fa-clock text-gray-400"></i> {{ user.timezone or 'UTC' }}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha de Registro</label>
+                        <p class="text-gray-800 dark:text-gray-200 font-medium">
+                            {{ user.created_at.strftime('%d de %B, %Y') }}
+                        </p>
+                    </div>
+                </div>
+
+                {% if user.bio %}
+                <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Biografía</label>
+                    <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl text-gray-600 dark:text-gray-300 italic border border-gray-100 dark:border-gray-600">
+                        "{{ user.bio }}"
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Cargar estadísticas via AJAX
+    // Agregamos un pequeño delay artificial o manejo de errores para suavidad
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch("{{ url_for('user_stats') }}") // Asegúrate que esta ruta exista en tu backend
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la red');
+                return response.json();
+            })
+            .then(data => {
+                // Animación simple de entrada de números
+                const investedEl = document.getElementById('total-invested');
+                const transactionsEl = document.getElementById('transactions-count');
+                
+                investedEl.textContent = '$' + parseFloat(data.total_invested).toFixed(2);
+                transactionsEl.textContent = data.transactions_count;
+                
+                // Quitar clase de 'animate-pulse' si quisieras agregarla mientras carga
+            })
+            .catch(error => {
+                console.error('Error cargando stats:', error);
+                document.getElementById('total-invested').textContent = '$0.00';
+                document.getElementById('transactions-count').textContent = '0';
+            });
+    });
+</script>
+{% endblock %}

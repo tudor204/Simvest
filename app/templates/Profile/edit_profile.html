@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto pb-12">
+    
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Configuración de la Cuenta</h1>
+        <p class="text-gray-500 dark:text-gray-400">Actualiza tu información personal y gestiona tu seguridad.</p>
+    </div>
+
+    <div class="space-y-8">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+                <div class="bg-simvest-blue/10 text-simvest-blue p-2 rounded-lg">
+                    <i class="fa-regular fa-id-card text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Información Básica</h2>
+            </div>
+            
+            <div class="p-8">
+                <form method="POST" action="{{ url_for('edit_profile') }}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Nombre de Usuario
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <i class="fa-solid fa-at"></i>
+                                </span>
+                                <input type="text" id="username" name="username" value="{{ user.username }}" required
+                                    class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Correo Electrónico
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                                    <i class="fa-regular fa-envelope"></i>
+                                </span>
+                                <input type="email" id="email" name="email" value="{{ user.email }}" required
+                                    class="pl-10 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nombre</label>
+                            <input type="text" id="first_name" name="first_name" value="{{ user.first_name or '' }}"
+                                class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                        </div>
+                        <div>
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Apellido</label>
+                            <input type="text" id="last_name" name="last_name" value="{{ user.last_name or '' }}"
+                                class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Biografía</label>
+                        <textarea id="bio" name="bio" rows="3"
+                            class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition"
+                            placeholder="Cuéntanos un poco sobre ti...">{{ user.bio or '' }}</textarea>
+                        <p class="mt-2 text-xs text-gray-500">Breve descripción para tu perfil público.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label for="language" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Idioma</label>
+                            <select id="language" name="language"
+                                class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                                <option value="es" {% if user.language == 'es' %}selected{% endif %}>🇪🇸 Español</option>
+                                <option value="en" {% if user.language == 'en' %}selected{% endif %}>🇺🇸 English</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Zona Horaria</label>
+                            <select id="timezone" name="timezone"
+                                class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition">
+                                <option value="UTC" {% if user.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                <option value="America/Mexico_City" {% if user.timezone == 'America/Mexico_City' %}selected{% endif %}>Ciudad de México</option>
+                                <option value="America/New_York" {% if user.timezone == 'America/New_York' %}selected{% endif %}>New York</option>
+                                </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        <a href="{{ url_for('profile') }}" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="bg-simvest-blue hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition duration-200 transform hover:scale-[1.02]">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
+                <div class="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 p-2 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">Cambiar Contraseña</h2>
+            </div>
+
+            <div class="p-8">
+                <form method="POST" action="{{ url_for('change_password') }}">
+                    <div class="grid grid-cols-1 gap-6 max-w-2xl">
+                        <div>
+                            <label for="current_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Contraseña Actual
+                            </label>
+                            <input type="password" id="current_password" name="current_password" required
+                                class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-orange-500 focus:border-orange-500 shadow-sm sm:text-sm transition">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="new_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Nueva Contraseña
+                                </label>
+                                <input type="password" id="new_password" name="new_password" required
+                                    class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-orange-500 focus:border-orange-500 shadow-sm sm:text-sm transition">
+                            </div>
+                            <div>
+                                <label for="confirm_password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Confirmar Nueva Contraseña
+                                </label>
+                                <input type="password" id="confirm_password" name="confirm_password" required
+                                    class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-orange-500 focus:border-orange-500 shadow-sm sm:text-sm transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button type="submit" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:text-orange-600 dark:hover:text-orange-400 font-semibold py-2.5 px-6 rounded-lg transition duration-200 shadow-sm">
+                            Actualizar Contraseña
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
