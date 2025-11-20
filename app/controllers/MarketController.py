@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 # Importaciones de Servicios y Utilidades
-from app.market_service import fetch_live_market_data, fetch_historical_data, fetch_single_asset_details
+from app.market_service import fetch_live_market_data, fetch_historical_data, fetch_single_asset_details, get_asset_details
 from app.utils.utils import MARKET_UNIVERSE 
 # Importaciones de Modelos
 from app.models import Holding, db, Transaction, User
@@ -12,45 +12,7 @@ import yfinance as yf
 # --- Definir Blueprint ---
 market_bp = Blueprint('market', __name__, url_prefix='/market')
 
-def get_asset_details(symbol, category):
-    """Obtiene detalles específicos del activo según su categoría usando yfinance"""
-    try:
-        ticker = yf.Ticker(symbol)
-        info = ticker.info
-        
-        # Campos base comunes
-        asset_details = {
-            'name': info.get('longName', info.get('shortName', 'N/A')),
-            'symbol': symbol,
-            'category': category,
-            'description': info.get('longBusinessSummary', 'Sin descripción disponible.'),
-            'current_price': info.get('currentPrice', info.get('regularMarketPrice', 0)),
-            'previous_close': info.get('previousClose', 0)
-        }
-        
-        # Campos específicos por categoría
-        if category == 'fondos':
-            asset_details.update({
-                'sector': 'Fondo de Inversión',
-                'industry': info.get('category', 'N/A'),
-                'market_cap': info.get('totalAssets', 'N/A'),
-                'expense_ratio': info.get('annualReportExpenseRatio', 'N/A'),
-                'ytd_return': info.get('ytdReturn', 'N/A'),
-                'total_assets': info.get('totalAssets', 'N/A')
-            })
-        else:
-            # Para acciones, ETFs, crypto, etc.
-            asset_details.update({
-                'sector': info.get('sector', 'N/A'),
-                'industry': info.get('industry', 'N/A'),
-                'market_cap': info.get('marketCap', 'N/A')
-            })
-        
-        return asset_details
-        
-    except Exception as e:
-        print(f"Error obteniendo detalles para {symbol}: {e}")
-        return None
+
 
 @market_bp.route('/', methods=['GET'])
 @login_required
@@ -138,17 +100,6 @@ def load_asset_historical_data(symbol, period):
         print(f"❌ Error cargando datos históricos para {symbol} ({period}): {e}")
         return jsonify({'error': str(e)}), 500
 
-# =========================================================
-# 💵 RUTA DE COMPRA
-# =========================================================
-from flask import request, redirect, url_for, flash
-from flask_login import login_required, current_user
-# Asegúrate de importar tus modelos y la base de datos (db)
-# from tu_app.models import Holding, Transaction
-# from tu_app import db
-from datetime import datetime
-# Asumo que esta función existe en tu código:
-# from tu_app.utils import fetch_single_asset_details 
 
 @market_bp.route('/buy', methods=['POST'])
 @login_required

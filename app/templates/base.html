@@ -137,10 +137,10 @@
 
         {% else %}
           <div class="flex items-center gap-3">
-              <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-gray-600 hover:text-simvest-blue dark:text-gray-300 dark:hover:text-white transition hidden sm:block">
+              <a href="{{ url_for('login') }}" class="text-sm font-semibold text-gray-600 hover:text-simvest-blue dark:text-gray-300 dark:hover:text-white transition hidden sm:block">
                 Iniciar Sesión
               </a>
-              <a href="{{ url_for('auth.register') }}" class="bg-simvest-blue hover:bg-simvest-darkblue text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105">
+              <a href="{{ url_for('register') }}" class="bg-simvest-blue hover:bg-simvest-darkblue text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-lg shadow-blue-500/30 transition-all transform hover:scale-105">
                 Registrarse
               </a>
           </div>
