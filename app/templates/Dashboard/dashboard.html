@@ -119,8 +119,14 @@
                 </thead>
                 <tbody>
                     {% for h in holdings %}
-                    <tr class="border-b hover:bg-gray-50 transition" id="row-{{ h.id }}">
-                        <td class="px-6 py-4 font-bold">{{ h.symbol }}</td>
+                    
+                    <tr class="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer group relative" 
+                        id="row-{{ h.id }}"
+                        onclick="window.location='{{ url_for('market.asset_detail', symbol=h.symbol) }}'">
+                        
+                        <td class="px-6 py-4 font-bold text-simvest-blue group-hover:underline">
+                            {{ h.name }}
+                        </td>
                         <td class="px-6 py-4">{{ "{:,.2f}".format(h.quantity) }}</td>
                         <td class="px-6 py-4">{{ h.purchase_price | currency }}</td>
                         
@@ -132,11 +138,9 @@
                         </td>
                         
                         <td class="px-6 py-4 text-center">
-                             <form method="POST" action="{{ url_for('market.sell') }}" class="inline-flex items-center gap-2">
-                                 <input type="hidden" name="holding_id" value="{{ h.id }}">
-                                 <input type="number" name="quantity_to_sell" required min="0.01" max="{{ h.quantity }}" step="any" value="{{ h.quantity }}" class="w-20 border rounded p-1 text-right text-xs">
-                                 <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Vender</button>
-                             </form>
+                            <span class="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg">
+                                {{ "{:,.4f}".format(h.quantity) }}
+                            </span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -144,7 +148,10 @@
             </table>
         </div>
         {% else %}
-        <p class="text-gray-500 italic">Aún no tienes inversiones.</p>
+        <div class="text-center py-8">
+            <p class="text-gray-500 italic mb-2">Aún no tienes inversiones activas.</p>
+            <a href="{{ url_for('market.index') }}" class="text-simvest-blue hover:underline text-sm">Ir al mercado para comprar</a>
+        </div>
         {% endif %}
     </section>
 

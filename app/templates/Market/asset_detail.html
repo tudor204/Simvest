@@ -18,25 +18,61 @@
     .fund-specific {
         @apply bg-blue-50 border-blue-200;
     }
+    /* Estilos antiguos de tabs por si acaso, aunque usamos el nuevo diseño */
+    .tab-btn {
+        @apply flex-1 pb-3 text-center font-semibold text-gray-500 border-b-2 border-transparent transition-all hover:text-gray-700;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto mt-8 p-6">
     <div class="mb-6">
-        <a href="{{ url_for('market.market') }}" class="text-blue-600 hover:text-blue-800 font-medium">
-            ← Volver al Mercado
+        <a href="{{ url_for('market.market') }}" class="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Volver al Mercado
         </a>
-        <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ asset.name }} ({{ asset.symbol }})</h1>
+        <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ asset.name }} <span class="text-gray-400 text-2xl font-medium">({{ asset.symbol }})</span></h1>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
         <div class="lg:col-span-1 space-y-6">
+            
+            {% if holding %}
+            <div class="info-card bg-blue-50 border-blue-200 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-blue-900" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-blue-900 mb-4 relative z-10">💼 Tu Posición</h2>
+                <div class="space-y-3 relative z-10 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-800">Cantidad:</span>
+                        <span class="font-mono font-bold text-lg">{{ "{:,.4f}".format(holding.quantity) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-800">Precio Promedio:</span>
+                        <span class="font-medium">{{ holding.purchase_price | currency }}</span>
+                    </div>
+                    <div class="border-t border-blue-200 pt-2 flex justify-between items-center mt-2">
+                        <span class="text-blue-900 font-semibold">Valor Actual:</span>
+                        <span class="font-bold text-xl text-blue-900">
+                            {{ (holding.quantity * asset.current_price) | currency }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="info-card {% if asset.category == 'fondos' %}fund-specific{% endif %}">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800">Información del Activo</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between"><span class="text-gray-600">Símbolo:</span><span class="font-mono font-medium">{{ asset.symbol }}</span></div>
-                    <div class="flex justify-between"><span class="text-gray-600">Categoría:</span><span class="font-medium">{{ asset.category | title }}</span></div>
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Información de Mercado</h2>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between"><span class="text-gray-600">Categoría:</span><span class="font-medium bg-gray-100 px-2 py-0.5 rounded">{{ asset.category | title }}</span></div>
                     
                     {% if asset.category == 'fondos' %}
                         {% if asset.total_assets and asset.total_assets != 'N/A' %}
@@ -45,7 +81,7 @@
                             <span class="font-medium">{{ asset.total_assets|float | currency }}</span>
                         </div>
                         {% endif %}
-                        {% else %}
+                    {% else %}
                         {% if asset.market_cap and asset.market_cap != 'N/A' %}
                         <div class="flex justify-between">
                             <span class="text-gray-600">Market Cap:</span>
@@ -58,12 +94,12 @@
                             </span>
                         </div>
                         {% endif %}
-                        {% endif %}
+                    {% endif %}
 
-                    <div class="border-t pt-3 mt-3">
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Precio Actual:</span>
-                            <span class="font-bold text-green-600">
+                    <div class="border-t border-gray-100 pt-3 mt-3">
+                        <div class="flex justify-between items-end">
+                            <span class="text-gray-600 mb-1">Precio Actual:</span>
+                            <span class="font-bold text-2xl text-gray-900">
                                 {% if asset.current_price and asset.current_price != 'N/A' %}
                                     {{ asset.current_price | currency }}
                                 {% else %}
@@ -71,9 +107,9 @@
                                 {% endif %}
                             </span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Cierre Anterior:</span>
-                            <span class="font-medium">
+                        <div class="flex justify-between mt-1">
+                            <span class="text-gray-600 text-xs">Cierre Anterior:</span>
+                            <span class="text-gray-500 text-xs">
                                 {% if asset.previous_close and asset.previous_close != 'N/A' %}
                                     {{ asset.previous_close | currency }}
                                 {% else %}
@@ -84,86 +120,198 @@
                     </div>
                 </div>
             </div>
+
+            <div class="info-card">
+                <div class="bg-gray-100 p-1.5 rounded-xl flex mb-6 relative">
+                    <button id="tab-buy" onclick="switchOperation('buy')"
+                            class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-bold rounded-lg transition-all duration-200 shadow-sm text-blue-700 bg-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Comprar
+                    </button>
+                    
+                    {% if holding %}
+                    <button id="tab-sell" onclick="switchOperation('sell')"
+                            class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-gray-500 hover:text-gray-700 hover:bg-gray-200/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        Vender
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div id="operation-buy">
+                    <div class="flex mb-4 p-1 bg-gray-100 rounded-lg">
+                        <button type="button" id="mode-quantity" data-mode="quantity"
+                                class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors bg-white shadow-sm text-blue-600 border border-gray-200">
+                            Unidades
+                        </button>
+                        <button type="button" id="mode-amount" data-mode="amount"
+                                class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors text-gray-500 hover:bg-gray-200">
+                            Capital (€)
+                        </button>
+                    </div>
+                
+                    <form method="POST" action="{{ url_for('market.buy') }}">
+                        <input type="hidden" name="symbol" value="{{ asset.symbol }}">
+                        
+                        <div id="container-quantity" class="mb-4">
+                            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                                Cantidad de Unidades
+                            </label>
+                            <input type="number" id="quantity" name="quantity" min="0.00001" step="any"
+                                    class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                    placeholder="Ej: 5">
+                        </div>
+                
+                        <div id="container-amount" class="mb-4 hidden">
+                            <label for="amount_to_buy" class="block text-sm font-medium text-gray-700 mb-2">
+                                Monto a Invertir (€)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" id="amount_to_buy" name="amount_to_buy" min="0.01" step="0.01"
+                                        class="w-full border border-gray-300 rounded-lg p-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                                        placeholder="500.00">
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 flex justify-between">
+                                <span>Disponible:</span>
+                                <span class="font-medium text-gray-700">{{ current_user.capital | currency if current_user.is_authenticated else 'N/A' }}</span>
+                            </p>
+                        </div>
+                
+                        <button type="submit" 
+                                class="group w-full relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 hover:shadow-blue-500/50 hover:-translate-y-0.5 hover:scale-[1.01]">
+                            <div class="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-opacity opacity-0 group-hover:opacity-100"></div>
+                            <div class="relative flex items-center justify-center gap-2">
+                                <span>Confirmar Compra</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+
+                {% if holding %}
+                <div id="operation-sell" class="hidden">
+                    <form method="POST" action="{{ url_for('market.sell') }}">
+                        <input type="hidden" name="holding_id" value="{{ holding.id }}">
+                        
+                        <div class="mb-4 bg-red-50 p-3 rounded-lg border border-red-100">
+                            <p class="text-sm text-red-800">
+                                Tienes <strong>{{ "{:,.4f}".format(holding.quantity) }}</strong> acciones disponibles.
+                            </p>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad a Vender</label>
+                            <div class="relative">
+                                <input type="number" id="quantity_to_sell" name="quantity_to_sell" 
+                                        max="{{ holding.quantity }}" step="any" min="0.00001" required
+                                        class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                                        placeholder="0.00">
+                                
+                                <button type="button" onclick="document.getElementById('quantity_to_sell').value = '{{ holding.quantity }}'" 
+                                        class="absolute right-2 top-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded font-medium transition">
+                                    MÁX
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" 
+                                class="group w-full relative overflow-hidden bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-red-500/30 transition-all duration-300 hover:shadow-red-500/50 hover:-translate-y-0.5 hover:scale-[1.01]">
+                            <div class="absolute inset-0 bg-white/20 group-hover:bg-white/30 transition-opacity opacity-0 group-hover:opacity-100"></div>
+                            <div class="relative flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Ejecutar Venta</span>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
             
             <div class="info-card">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800">Descripción</h2>
-                <p class="text-gray-700 leading-relaxed">
+                <h2 class="text-lg font-semibold mb-3 text-gray-800">Sobre {{ asset.name }}</h2>
+                <p class="text-sm text-gray-600 leading-relaxed text-justify">
                     {{ asset.description }}
                 </p>
             </div>
 
-            <div class="info-card">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800">Compra Rápida</h2>
-                
-                <div class="flex mb-4 p-1 bg-gray-100 rounded-lg">
-                    <button type="button" id="mode-quantity" data-mode="quantity"
-                            class="flex-1 py-2 text-sm font-semibold rounded-lg transition-colors bg-white shadow-sm text-blue-600">
-                        Comprar Unidades
-                    </button>
-                    <button type="button" id="mode-amount" data-mode="amount"
-                            class="flex-1 py-2 text-sm font-semibold rounded-lg transition-colors text-gray-600 hover:bg-gray-200">
-                        Comprar por Capital (€)
-                    </button>
-                </div>
-            
-                <form method="POST" action="{{ url_for('market.buy') }}">
-                    <input type="hidden" name="symbol" value="{{ asset.symbol }}">
-                    
-                    <div id="container-quantity" class="mb-4">
-                        <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
-                            Cantidad de Unidades (ej. 0.5 o 2)
-                        </label>
-                        <input type="number" id="quantity" name="quantity" min="0.00001" step="any"
-                                class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="0.00" value="">
-                    </div>
-            
-                    <div id="container-amount" class="mb-4 hidden">
-                        <label for="amount_to_buy" class="block text-sm font-medium text-gray-700 mb-2">
-                            Monto de Capital a Invertir (€)
-                        </label>
-                        <input type="number" id="amount_to_buy" name="amount_to_buy" min="0.01" step="0.01"
-                                class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="500.00">
-                        <p class="text-xs text-gray-500 mt-1">Tu Capital disponible: {{ current_user.capital | currency if current_user.is_authenticated else 'N/A' }}</p>
-                    </div>
-            
-                    <button type="submit" 
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors shadow-md">
-                        Comprar {{ asset.symbol }}
-                    </button>
-                </form>
-            </div>
         </div>
 
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 space-y-6">
             <div class="info-card">
-                <div class="flex flex-wrap gap-2 mb-6">
+                <div class="flex flex-wrap gap-2 mb-6 border-b border-gray-100 pb-4">
                     <button class="period-btn active" data-period="1D">1 Día</button>
-                    <button class="period-btn" data-period="1S">1 Semana</button>
+                    <button class="period-btn" data-period="1S">1 Sem</button>
                     <button class="period-btn" data-period="1M">1 Mes</button>
-                    <button class="period-btn" data-period="6M">6 Meses</button>
+                    <button class="period-btn" data-period="6M">6 Mes</button>
                     <button class="period-btn" data-period="1A">1 Año</button>
                     <button class="period-btn" data-period="5A">5 Años</button>
                 </div>
 
-                <div class="h-96">
+                <div class="h-[400px] w-full relative">
                     <canvas id="historicalChart"></canvas>
-                </div>
-
-                <div id="noDataMessage" class="hidden text-center py-8">
-                    <p class="text-gray-500 text-lg">No hay datos históricos disponibles para este activo.</p>
+                    <div id="noDataMessage" class="hidden absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-80">
+                        <p class="text-gray-500 text-lg">No hay datos históricos disponibles.</p>
+                    </div>
                 </div>
             </div>
+
+            {% if history %}
+            <div class="info-card">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span>📜</span> Historial de Transacciones
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                            <tr>
+                                <th class="px-4 py-3 font-medium">Tipo</th>
+                                <th class="px-4 py-3 font-medium">Fecha</th>
+                                <th class="px-4 py-3 font-medium text-right">Cantidad</th>
+                                <th class="px-4 py-3 font-medium text-right">Precio Unit.</th>
+                                <th class="px-4 py-3 font-medium text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for t in history %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3 font-bold">
+                                    {% if t.type == 'SELL' %}
+                                        <span class="text-red-500 bg-red-50 px-2 py-1 rounded text-xs">VENTA</span>
+                                    {% else %}
+                                        <span class="text-green-600 bg-green-50 px-2 py-1 rounded text-xs">COMPRA</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-gray-500">{{ t.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+                                <td class="px-4 py-3 text-right font-mono">{{ "{:,.4f}".format(t.quantity) }}</td>
+                                <td class="px-4 py-3 text-right text-gray-600">{{ t.price_per_unit | currency }}</td>
+                                <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ t.total_amount | currency }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
         </div>
         
-    </div> </div>
+    </div> 
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // === Lógica del Gráfico (Sin cambios, solo robustez) ===
     const ctx = document.getElementById('historicalChart').getContext('2d');
     const noDataMessage = document.getElementById('noDataMessage');
     let currentChart = null;
@@ -178,10 +326,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 14 },
-                    bodyFont: { size: 13 },
-                    padding: 10,
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    titleColor: '#1f2937',
+                    bodyColor: '#1f2937',
+                    borderColor: '#e5e7eb',
+                    borderWidth: 1,
+                    titleFont: { size: 14, weight: 'bold' },
+                    padding: 12,
                     callbacks: {
                         label: function(context) {
                             return `Precio: $${context.parsed.y.toFixed(2)}`;
@@ -191,16 +342,15 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             scales: {
                 x: { 
-                    grid: { color: 'rgba(0,0,0,0.1)' }, 
-                    ticks: { color: '#6B7280' }
+                    grid: { display: false }, 
+                    ticks: { color: '#9CA3AF', maxTicksLimit: 6 }
                 },
                 y: { 
-                    grid: { color: 'rgba(0,0,0,0.1)' }, 
+                    position: 'right',
+                    grid: { color: '#F3F4F6' }, 
                     ticks: {
-                        color: '#6B7280',
-                        callback: function(value) {
-                            return '$' + value.toFixed(2);
-                        }
+                        color: '#9CA3AF',
+                        callback: function(value) { return '$' + value.toFixed(2); }
                     }
                 }
             },
@@ -211,18 +361,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderChart(period) {
         fetch(`/market/asset/{{ asset.symbol }}/history/${period}`)
             .then(res => {
-                if (!res.ok) {
-                    throw new Error('Error en la respuesta del servidor');
-                }
+                if (!res.ok) throw new Error('Error serv');
                 return res.json();
             })
             .then(data => {
                 if (!data || data.error || data.length === 0) {
-                    console.warn('No se pudieron cargar los datos históricos:', data?.error);
-                    if (currentChart) {
-                        currentChart.destroy();
-                        currentChart = null;
-                    }
+                    if (currentChart) currentChart.destroy();
                     document.getElementById('historicalChart').classList.add('hidden');
                     noDataMessage.classList.remove('hidden');
                     return;
@@ -233,20 +377,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const labels = data.map(item => {
                     const date = new Date(item.time);
-                    if (period === '1D') {
-                        return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                    } else if (period === '1S') {
-                        return date.toLocaleDateString('es-ES', { weekday: 'short', hour: '2-digit' });
-                    } else {
-                        return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: period === '5A' ? '2-digit' : undefined });
-                    }
+                    if (period === '1D') return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                    if (period === '1S') return date.toLocaleDateString('es-ES', { weekday: 'short', hour: '2-digit' });
+                    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: period === '5A' ? '2-digit' : undefined });
                 });
                 
                 const prices = data.map(item => item.price);
 
-                if (currentChart) {
-                    currentChart.destroy();
-                }
+                if (currentChart) currentChart.destroy();
+
+                // Cambiar color del gráfico según tendencia (verde sube, rojo baja)
+                const startPrice = prices[0];
+                const endPrice = prices[prices.length - 1];
+                const isPositive = endPrice >= startPrice;
+                const chartColor = isPositive ? '#10B981' : '#EF4444'; // Verde : Rojo
+                const chartBg = isPositive ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
 
                 currentChart = new Chart(ctx, {
                     ...chartConfig,
@@ -255,28 +400,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         datasets: [{
                             label: 'Precio ($)',
                             data: prices,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderColor: chartColor,
+                            backgroundColor: chartBg,
                             borderWidth: 2,
                             fill: true,
-                            tension: 0.4,
+                            tension: 0.1,
                             pointRadius: 0,
-                            pointHoverRadius: 4,
-                            pointBackgroundColor: '#2563eb',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2
+                            pointHoverRadius: 5,
+                            pointHoverBackgroundColor: chartColor,
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 2
                         }]
                     }
                 });
             })
-            .catch(err => {
-                console.error('Error cargando datos históricos:', err);
-                document.getElementById('historicalChart').classList.add('hidden');
-                noDataMessage.classList.remove('hidden');
-            });
+            .catch(err => console.error('Error chart:', err));
     }
 
-    // Botones de periodo
     document.querySelectorAll('.period-btn').forEach(button => {
         button.addEventListener('click', function() {
             document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
@@ -285,11 +425,53 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Inicializar con 1 día
     renderChart('1D');
 });
 
-// --- Lógica para alternar el formulario de compra ---
+// === Lógica de Tabs (Comprar / Vender) ===
+function switchOperation(op) {
+    const tabBuy = document.getElementById('tab-buy');
+    const tabSell = document.getElementById('tab-sell');
+    const formBuy = document.getElementById('operation-buy');
+    const formSell = document.getElementById('operation-sell');
+
+    // Clases para el estado ACTIVO (Fondo blanco, sombra, color fuerte)
+    const activeClasses = ['bg-white', 'text-blue-700', 'shadow-sm'];
+    // Clases para el estado ACTIVO VENTA (Fondo blanco, texto rojo)
+    const activeSellClasses = ['bg-white', 'text-red-600', 'shadow-sm'];
+    // Clases para el estado INACTIVO (Texto gris, sin fondo)
+    const inactiveClasses = ['text-gray-500', 'hover:bg-gray-200/50'];
+
+    if (op === 'buy') {
+        formBuy.classList.remove('hidden');
+        if(formSell) formSell.classList.add('hidden');
+        
+        // Activar Tab Compra
+        tabBuy.classList.add(...activeClasses);
+        tabBuy.classList.remove(...inactiveClasses);
+        
+        // Desactivar Tab Venta
+        if(tabSell) {
+            tabSell.classList.remove(...activeSellClasses); // Quitamos estilo activo de venta
+            tabSell.classList.add(...inactiveClasses);
+        }
+    } else {
+        formBuy.classList.add('hidden');
+        if(formSell) formSell.classList.remove('hidden');
+
+        // Desactivar Tab Compra
+        tabBuy.classList.remove(...activeClasses);
+        tabBuy.classList.add(...inactiveClasses);
+
+        // Activar Tab Venta
+        if(tabSell) {
+            tabSell.classList.add(...activeSellClasses);
+            tabSell.classList.remove(...inactiveClasses);
+        }
+    }
+}
+
+// === Lógica Formulario Compra (Unidades vs Monto) ===
 const modeQuantityBtn = document.getElementById('mode-quantity');
 const modeAmountBtn = document.getElementById('mode-amount');
 const containerQuantity = document.getElementById('container-quantity');
@@ -299,48 +481,34 @@ const inputAmount = document.getElementById('amount_to_buy');
 
 function switchMode(mode) {
     if (mode === 'quantity') {
-        // Mostrar Unidades
         containerQuantity.classList.remove('hidden');
         containerAmount.classList.add('hidden');
-        
-        // Habilitar/Requerir Unidades, deshabilitar/quitar requerimiento de Monto
         inputQuantity.setAttribute('required', 'required');
         inputAmount.removeAttribute('required');
-        inputAmount.value = ''; // Limpiar el valor para no enviarlo
+        inputAmount.value = '';
 
-        // Estilos del botón
-        modeQuantityBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
-        modeQuantityBtn.classList.remove('text-gray-600', 'hover:bg-gray-200');
-        modeAmountBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
-        modeAmountBtn.classList.add('text-gray-600', 'hover:bg-gray-200');
-
-    } else if (mode === 'amount') {
-        // Mostrar Monto
+        modeQuantityBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'border-gray-200');
+        modeQuantityBtn.classList.remove('text-gray-500', 'hover:bg-gray-200');
+        modeAmountBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'border-gray-200');
+        modeAmountBtn.classList.add('text-gray-500', 'hover:bg-gray-200');
+    } else {
         containerQuantity.classList.add('hidden');
         containerAmount.classList.remove('hidden');
-
-        // Habilitar/Requerir Monto, deshabilitar/quitar requerimiento de Unidades
         inputAmount.setAttribute('required', 'required');
         inputQuantity.removeAttribute('required');
-        inputQuantity.value = ''; // Limpiar el valor para no enviarlo
+        inputQuantity.value = '';
 
-        // Estilos del botón
-        modeAmountBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
-        modeAmountBtn.classList.remove('text-gray-600', 'hover:bg-gray-200');
-        modeQuantityBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
-        modeQuantityBtn.classList.add('text-gray-600', 'hover:bg-gray-200');
+        modeAmountBtn.classList.add('bg-white', 'shadow-sm', 'text-blue-600', 'border-gray-200');
+        modeAmountBtn.classList.remove('text-gray-500', 'hover:bg-gray-200');
+        modeQuantityBtn.classList.remove('bg-white', 'shadow-sm', 'text-blue-600', 'border-gray-200');
+        modeQuantityBtn.classList.add('text-gray-500', 'hover:bg-gray-200');
     }
 }
 
-        // Escuchadores de eventos para los botones
-        modeQuantityBtn.addEventListener('click', () => switchMode('quantity'));
-        modeAmountBtn.addEventListener('click', () => switchMode('amount'));
-
-        // Inicializar el modo de compra (Por defecto: Unidades)
-        // No es necesario llamar a switchMode('quantity') aquí si ya está configurado por defecto en HTML/CSS,
-        // pero si usaste la estructura de arriba, ya está configurado correctamente.
-        // Asegúrate de que el campo 'quantity' esté requerido por defecto en el HTML.
-        inputQuantity.setAttribute('required', 'required'); 
-        // --- Fin Lógica de formulario ---
+if(modeQuantityBtn && modeAmountBtn) {
+    modeQuantityBtn.addEventListener('click', () => switchMode('quantity'));
+    modeAmountBtn.addEventListener('click', () => switchMode('amount'));
+    inputQuantity.setAttribute('required', 'required');
+}
 </script>
 {% endblock %}

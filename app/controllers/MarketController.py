@@ -52,27 +52,40 @@ def get_live_market_data():
         print(f"Error en la ruta /data/live: {e}")
         return jsonify({"error": "No se pudieron cargar los datos de cotización."}), 500
 
+
+
 @market_bp.route('/asset/<string:symbol>')
 @login_required
 def asset_detail(symbol):
-    """
-    Página de detalles de un activo específico
-    """
     try:
-        # Buscar el activo en el universo de mercado
+        # 1. Buscar info general del mercado (Tu código actual)
         asset_info = next((a for a in MARKET_UNIVERSE if a['symbol'] == symbol), None)
         if not asset_info:
             flash(f'Activo {symbol} no encontrado.', 'danger')
             return redirect(url_for('market.market'))
 
-        # Usar la nueva función adaptada
         asset_details = get_asset_details(symbol, asset_info['category'])
-        
         if not asset_details:
             flash(f'Error al cargar datos para {symbol}.', 'danger')
             return redirect(url_for('market.market'))
         
-        return render_template('Market/asset_detail.html', asset=asset_details)
+        #  2. Obtener datos DEL USUARIO para este activo ---
+        # Buscamos si el usuario tiene acciones de esto
+        user_holding = Holding.query.filter_by(user_id=current_user.id, symbol=symbol).first()
+        
+        # Buscamos el historial de transacciones SOLO de este activo
+        user_history = Transaction.query.filter_by(
+            user_id=current_user.id, 
+            symbol=symbol
+        ).order_by(Transaction.timestamp.desc()).limit(10).all()
+
+        # Pasamos todo al template
+        return render_template(
+            'Market/asset_detail.html', 
+            asset=asset_details,
+            holding=user_holding,   
+            history=user_history    
+        )
         
     except Exception as e:
         flash(f'Error al cargar datos para {symbol}: {str(e)}', 'danger')
@@ -104,10 +117,7 @@ def load_asset_historical_data(symbol, period):
 @market_bp.route('/buy', methods=['POST'])
 @login_required
 def buy():
-    """
-    Maneja la lógica de la compra de un activo, permitiendo la compra por unidades (quantity)
-    o por monto (amount_to_buy), y registra la Transacción.
-    """
+    
     symbol = request.form.get('symbol', '').upper()
     
     # 1. Obtener cotización actual (Necesario para calcular la cantidad/costo)

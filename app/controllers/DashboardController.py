@@ -16,14 +16,14 @@ dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 @dashboard_bp.route('/')
 @login_required
 def dashboard():
-    # Solo obtenemos lo que está en TU base de datos (es instantáneo)
+    
     holdings = Holding.query.filter_by(user_id=current_user.id).all()
     
     transaction_history = Transaction.query.filter_by(user_id=current_user.id)\
                                    .order_by(desc(Transaction.timestamp))\
                                    .limit(5).all() # Limitado a 5 para resumen
 
-    # Pasamos 'holdings' para pintar la tabla, pero los precios actuales se cargarán luego
+    
     return render_template(
         'Dashboard/dashboard.html',
         holdings=holdings,
@@ -39,7 +39,7 @@ def dashboard():
 def dashboard_data():
     """
     Esta función hace el trabajo pesado en segundo plano:
-    1. Descarga precios en vivo SOLO de tus acciones.
+    1. Descarga precios en vivo SOLO de las acciones.
     2. Calcula P&L y Totales.
     3. Genera datos para el gráfico.
     """
