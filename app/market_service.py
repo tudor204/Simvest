@@ -3,6 +3,7 @@ import pandas as pd
 import time
 from app.utils.utils import MARKET_UNIVERSE
 from datetime import datetime, timedelta
+import random
 
 # =========================================================
 # CACHÉ DE DATOS EN VIVO
@@ -201,21 +202,57 @@ def preload_favorites():
             fetch_historical_data(asset['symbol'], period)
 
 
-def get_simple_chart_data(current_total_value, days=7):
-    """Genera datos para el gráfico (simplificado para rendimiento)"""
+def get_simple_chart_data(current_total_value, timeframe='Todo'):
+    """Genera datos para el gráfico (simplificado para rendimiento) respetando el timeframe."""
+    
+    # Mapeo de timeframe a cantidad de puntos de datos para simulación
+    timeframe_map = {
+        '1D': 15,    # 15 puntos (últimas horas)
+        '1S': 7,     # 7 días
+        '1M': 30,    # 30 días
+        '3M': 90,    # 90 días
+        '1A': 252,   # 1 año (días de mercado)
+        'Todo': 365, # 1 año (simulación total)
+    }
+    
+    days = timeframe_map.get(timeframe, 30) # Por defecto, 30 días
+    
     labels = []
     values = []
-    # Aquí simulamos una leve variación para que el gráfico no sea plano si no tienes histórico real guardado
-    import random
+    
+    # Generar las fechas desde el pasado hasta hoy
     for i in range(days):
         date = datetime.now() - timedelta(days=days-1-i)
-        labels.append(date.strftime("%Y-%m-%d"))
-        # Pequeña variación aleatoria para efecto visual si no hay datos históricos reales
-        variation = random.uniform(0.98, 1.02) 
-        if i == days - 1: variation = 1 # El último día es el valor real
-        values.append(current_total_value * variation)
+        
+        # Formato de etiqueta (diferente si es intradía vs anual)
+        if timeframe in ['1D', '1S']:
+            labels.append(date.strftime("%H:%M")) 
+        else:
+            labels.append(date.strftime("%Y-%m-%d"))
+
+        # Pequeña variación aleatoria: asumimos que al inicio del periodo el valor era ligeramente menor
+        # Generar una variación que va decreciendo a medida que nos acercamos al final (el valor real)
+        base_variation_factor = 1.0 - (i / days * 0.05) # Va de 1.0 a 0.95
+        random_factor = random.uniform(0.99, 1.01) # Ruido
+        
+        simulated_value = current_total_value * base_variation_factor * random_factor
+
+        if i == days - 1: 
+            simulated_value = current_total_value # El último punto es el valor real
+            
+        values.append(simulated_value)
     
     return {"labels": labels, "values": values}
+
+# Nueva función que usarías para datos reales (a implementar en el futuro)
+# ------------------------------------------------------------------
+def get_portfolio_historical_value(holdings, current_capital, timeframe):
+    """
+    Función que DEBERÁS implementar para calcular el valor histórico REAL 
+    de todo el portafolio (sumando capital, restando transacciones) para un periodo dado.
+    Por ahora, solo llama a la simulación para que el código no rompa.
+    """
+    return get_simple_chart_data(current_capital, timeframe)
 
 
 def get_asset_details(symbol, category):

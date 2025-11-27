@@ -4,6 +4,7 @@
 {% block content %}
 <main class="container mx-auto px-6 py-12 space-y-12">
 
+    <!-- SECCIÓN 1: Encabezado de Bienvenida -->
     <section class="flex flex-col md:flex-row md:items-center md:justify-between 
                     bg-gradient-to-r from-simvest-blue to-simvest-darkblue 
                     text-white rounded-2xl shadow-lg p-8 relative overflow-hidden">
@@ -15,12 +16,15 @@
         </div>
     </section>
 
+    <!-- SECCIÓN 2: Tarjetas de Resumen (KPIs) -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Capital Disponible -->
         <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-simvest-gray mb-2">💰 Capital Disponible</h3>
             <p class="text-4xl font-bold text-simvest-blue">{{ current_capital | currency }}</p>
         </div>
 
+        <!-- Valor del Portafolio (Carga asíncrona) -->
         <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-simvest-gray mb-2">📈 Valor del Portafolio</h3>
             <div id="loader-portfolio" class="animate-pulse h-8 w-32 bg-gray-200 rounded"></div>
@@ -28,6 +32,7 @@
             <p class="text-sm text-gray-500 mt-1">Valor de mercado actual</p>
         </div>
 
+        <!-- Capital Total y P&L (Carga asíncrona) -->
         <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
             <h3 class="text-lg font-semibold text-simvest-gray mb-2">💼 Capital Total</h3>
             <div id="loader-total" class="animate-pulse h-8 w-32 bg-gray-200 rounded"></div>
@@ -36,21 +41,49 @@
         </div>
     </section>
     
-    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-simvest-gray dark:text-gray-100 mb-4">📊 Evolución del Portafolio</h2>
+    <!-- SECCIÓN 3: Gráfico de Evolución (Mejorado con Modal) -->
+    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 relative">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-simvest-gray dark:text-gray-100">📊 Evolución</h2>
+                <p class="text-sm text-gray-500">Rendimiento histórico de tu cuenta</p>
+            </div>
+            
+            <!-- Botón para expandir -->
+            <button onclick="openChartModal()" class="p-2 text-gray-400 hover:text-simvest-blue transition rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver en pantalla completa">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Botones de Rango de Tiempo (Ahora con clases y data-attributes) -->
+        <div id="timeframe-buttons" class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar">
+            {% for tf in ['1D', '1S', '1M', '3M', '1A', 'Todo'] %}
+            <button data-timeframe="{{ tf }}"
+                    class="timeframe-btn px-3 py-1 text-xs font-medium rounded-full border transition
+                           {% if tf == 'Todo' %}bg-simvest-blue text-white border-simvest-blue{% else %}text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600{% endif %}">
+                {{ tf }}
+            </button>
+            {% endfor %}
+        </div>
         
-        <div id="chart-loader" class="flex justify-center items-center h-40">
+        <!-- Loader del Gráfico -->
+        <div id="chart-loader" class="flex justify-center items-center h-64">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-simvest-blue"></div>
             <span class="ml-3 text-gray-500">Calculando historial...</span>
         </div>
         
-        <div id="chart-container" class="hidden">
-            <canvas id="portfolioChart" class="w-full h-40"></canvas> 
+        <!-- Contenedor del Gráfico Pequeño -->
+        <div id="chart-container" class="hidden relative h-64 w-full">
+            <canvas id="portfolioChart"></canvas> 
         </div>
     </section>
 
+    <!-- SECCIÓN 4: Historial y Guía -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
+        <!-- Historial Reciente -->
         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
             <h2 class="text-2xl font-bold text-simvest-blue mb-4">📜 Historial Reciente</h2>
             
@@ -89,18 +122,20 @@
             {% endif %}
         </div>
         
-        <div class="bg-simvest-blue/10 dark:bg-blue-900/50 p-6 rounded-2xl shadow-sm border border-simvest-blue/20">
+        <!-- Tarjeta de Guía -->
+        <div class="bg-simvest-blue/10 dark:bg-blue-900/50 p-6 rounded-2xl shadow-sm border border-simvest-blue/20 h-fit">
             <h3 class="text-xl font-bold text-simvest-blue dark:text-blue-200 mb-3">🎓 Guía de Simvest</h3>
             <p class="text-gray-700 dark:text-gray-300 mb-4">
                 ¿Eres nuevo? Aprende a usar la plataforma, a comprar acciones y a interpretar tu portafolio.
             </p>
-            <a href="#" class="bg-simvest-blue hover:bg-simvest-darkblue text-white font-semibold py-2 px-4 rounded-lg transition duration-150">
+            <a href="#" class="bg-simvest-blue hover:bg-simvest-darkblue text-white font-semibold py-2 px-4 rounded-lg transition duration-150 block text-center">
                 Aprender Ahora
             </a>
         </div>
 
     </section>
 
+    <!-- SECCIÓN 5: Tabla de Mis Inversiones -->
     <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
         <h2 class="text-2xl font-bold text-simvest-blue mb-4">Mis Inversiones</h2>
         
@@ -119,7 +154,6 @@
                 </thead>
                 <tbody>
                     {% for h in holdings %}
-                    
                     <tr class="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer group relative" 
                         id="row-{{ h.id }}"
                         onclick="window.location='{{ url_for('market.asset_detail', symbol=h.symbol) }}'">
@@ -150,118 +184,302 @@
         {% else %}
         <div class="text-center py-8">
             <p class="text-gray-500 italic mb-2">Aún no tienes inversiones activas.</p>
-            <a href="{{ url_for('market.index') }}" class="text-simvest-blue hover:underline text-sm">Ir al mercado para comprar</a>
+            <a href="{{ url_for('market.market') }}" class="text-simvest-blue hover:underline text-sm">Ir al mercado para comprar</a>
         </div>
         {% endif %}
     </section>
 
 </main>
 
+<!-- MODAL: Gráfico Expandido (Centrado Corregido) -->
+<div id="chart-modal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    
+    <!-- 1. Backdrop (Fondo oscuro fijo) -->
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeChartModal()"></div>
+
+    <!-- 2. Contenedor de Scroll y Posicionamiento -->
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <!-- Flexbox para centrar contenido vertical y horizontalmente -->
+        <div class="flex min-h-screen items-center justify-center p-4"></div>
+            
+            <!-- 3. La Tarjeta del Modal -->
+            <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all sm:my-8 w-full max-w-5xl mx-4">
+                
+                <!-- Modal Header -->
+                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-4 sm:px-6 flex justify-between items-center border-b border-gray-100 dark:border-gray-600">
+                    <h3 class="text-lg font-bold leading-6 text-gray-900 dark:text-white" id="modal-title">
+                        📊 Análisis Detallado
+                    </h3>
+                    <button type="button" class="text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded-full transition focus:outline-none" onclick="closeChartModal()">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="px-4 py-6 sm:px-6 bg-white dark:bg-gray-800">
+                    <!-- Contenedor del Gráfico con altura controlada -->
+                    <div class="relative w-full h-[60vh] min-h-[400px]"> 
+                        <canvas id="expandedPortfolioChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    // 1. Función para formatear dinero en JS
-    const currencyFmt = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 2
+    // Variables globales
+    let smallChartInstance = null;
+    let bigChartInstance = null;
+    let chartDataCache = null; 
+    let activeTimeframe = 'Todo'; // Estado inicial
+
+    // Ruta de la API de datos (debe ser accesible globalmente si es necesario)
+    const API_URL = "{{ url_for('dashboard.dashboard_data') }}";
+
+    // --- Funciones del Modal ---
+    function openChartModal() {
+        const modal = document.getElementById('chart-modal');
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+
+        // Renderizar el gráfico grande
+        if (chartDataCache) {
+            if (bigChartInstance) bigChartInstance.destroy();
+            
+            // Re-renderizamos el grande con los datos actuales
+            const ctxBig = document.getElementById('expandedPortfolioChart').getContext('2d');
+            bigChartInstance = new Chart(ctxBig, createChartConfig(
+                ctxBig, 
+                chartDataCache.labels, 
+                chartDataCache.values,
+                true // isExpanded = true
+            ));
+        }
+    }
+
+    function closeChartModal() {
+        const modal = document.getElementById('chart-modal');
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") closeChartModal();
     });
 
-    // Función para formatear porcentaje con color
+    // --- Lógica del Gráfico y Fetch ---
+
+    // Inicialización del formato de moneda
+    const currencyFmt = new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2
+    });
+
     function formatPnl(pnlVal) {
         const sign = pnlVal >= 0 ? '+' : '';
-        const colorClass = pnlVal >= 0 ? 'text-green-600' : 'text-red-600';
+        const colorClass = pnlVal >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+        return { text: `${sign}${pnlVal.toFixed(2)}%`, colorClass: colorClass };
+    }
+
+    function createChartConfig(ctx, labels, values, isExpanded = false) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, isExpanded ? 500 : 400); // Ajustar altura
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.4)'); 
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)'); 
+
         return {
-            text: `${sign}${pnlVal.toFixed(2)}%`,
-            colorClass: colorClass
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Valor Total',
+                    data: values,
+                    fill: true,
+                    backgroundColor: gradient,
+                    borderColor: '#2563EB',
+                    borderWidth: isExpanded ? 3 : 2,
+                    pointRadius: 0, 
+                    pointHoverRadius: 6, 
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: '#2563EB',
+                    pointBorderWidth: 2,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                        padding: 12,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 14, weight: 'bold' },
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + currencyFmt.format(context.parsed.y);
+                            },
+                            title: function(items) {
+                                // Muestra el timestamp si estamos en 1D o 1S
+                                if (activeTimeframe === '1D' || activeTimeframe === '1S') {
+                                    return items[0].label;
+                                }
+                                // Formatea la fecha de forma más limpia para rangos largos
+                                const date = new Date(items[0].label);
+                                return date.toLocaleDateString('es-ES', { 
+                                    year: 'numeric', month: 'short', day: 'numeric' 
+                                });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            display: isExpanded, // Solo mostrar fechas si está expandido
+                            maxTicksLimit: 8,
+                            font: { size: 11 },
+                            color: '#9CA3AF'
+                        }
+                    },
+                    y: {
+                        border: { display: false },
+                        grid: { color: '#f3f4f6', drawBorder: false },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return currencyFmt.format(value/1000000) + 'M';
+                                if (value >= 1000) return currencyFmt.format(value/1000) + 'k';
+                                return currencyFmt.format(value);
+                            },
+                            font: { size: 11 },
+                            color: '#9CA3AF'
+                        }
+                    }
+                }
+            }
         };
     }
 
-    // 2. Llamada a la API
-    fetch("{{ url_for('dashboard.dashboard_data') }}")
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) { console.error("Error del servidor API:", data.error); return; }
+    /**
+     * Hace el fetch de los datos y actualiza el gráfico y los KPIs
+     * @param {string} timeframe - El rango de tiempo a solicitar (e.g., '1D', 'Todo').
+     */
+    async function updateChartAndData(timeframe) {
+        // Mostrar Loader
+        document.getElementById('chart-container').classList.add('hidden');
+        document.getElementById('chart-loader').classList.remove('hidden');
 
-            // --- A. Actualizar Tarjetas Resumen ---
+        try {
+            const url = `${API_URL}?timeframe=${timeframe}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error API:", data.error);
+                throw new Error(data.error);
+            }
+
+            // 1. Destruir y Crear Gráfico Pequeño
+            if (smallChartInstance) {
+                smallChartInstance.destroy();
+            }
             
-            // Ocultar loaders
+            chartDataCache = data.chart_data; // Actualizar caché
+            activeTimeframe = timeframe; // Actualizar estado activo
+            
+            const ctxSmall = document.getElementById('portfolioChart').getContext('2d');
+            smallChartInstance = new Chart(ctxSmall, createChartConfig(
+                ctxSmall, 
+                data.chart_data.labels, 
+                data.chart_data.values,
+                false
+            ));
+
+            // 2. Actualizar Datos Numéricos (Solo la primera vez si es necesario, pero lo hacemos para consistencia)
+            
+            // Aunque el `timeframe` sólo cambia el gráfico, la primera carga (y cualquier carga) 
+            // siempre trae los últimos valores de KPIs y Holdings:
+            
+            // Ocultar loaders de KPIs (asumiendo que solo se muestran en la carga inicial)
             document.getElementById('loader-portfolio').classList.add('hidden');
             document.getElementById('loader-total').classList.add('hidden');
-            
-            // Valor Portafolio
+
             const elPortfolio = document.getElementById('val-portfolio');
             elPortfolio.innerText = currencyFmt.format(data.summary.portfolio_value);
             elPortfolio.classList.remove('hidden');
 
-            // Capital Total
             const elTotal = document.getElementById('val-total');
             elTotal.innerText = currencyFmt.format(data.summary.total_capital);
             elTotal.classList.remove('hidden');
             
-            // P&L Porcentaje Global (color coding)
             const elPnl = document.getElementById('val-pnl-pct');
-            const pnlData = formatPnl(data.summary.pnl_pct);
-
-            elPnl.innerText = pnlData.text + ' Global';
-            elPnl.className = `text-sm font-medium mt-1 ${pnlData.colorClass}`;
+            const pnlInfo = formatPnl(data.summary.pnl_pct);
+            elPnl.innerText = pnlInfo.text + ' Global';
+            elPnl.className = `text-sm font-medium mt-1 ${pnlInfo.colorClass}`;
             elPnl.classList.remove('hidden');
 
 
-            // --- B. Actualizar Tabla de Inversiones ---
+            // 3. Actualizar Tabla de Inversiones (Filas)
             for (const [holdingId, info] of Object.entries(data.holdings_updates)) {
-                // Actualizar Precio Actual
                 const priceCell = document.getElementById(`price-${holdingId}`);
                 if (priceCell) {
                     priceCell.innerText = currencyFmt.format(info.current_price);
                     priceCell.classList.remove('text-gray-400', 'animate-pulse');
                 }
-
-                // Actualizar Ganancia/Pérdida
                 const gainCell = document.getElementById(`gain-${holdingId}`);
                 if (gainCell) {
-                    const gainData = formatPnl(info.pct); // Usar la función de formato para el porcentaje
-                    
+                    const gainData = formatPnl(info.pct);
                     gainCell.innerText = `${currencyFmt.format(info.gain)} (${gainData.text})`;
                     gainCell.classList.remove('text-gray-400', 'animate-pulse');
-                    gainCell.classList.add(gainData.colorClass); // Aplicar color
+                    gainCell.className = `px-6 py-4 font-semibold ${gainData.colorClass}`;
                 }
             }
 
-
-            // --- C. Renderizar Gráfico ---
+        } catch (err) {
+            console.error("Fallo al actualizar datos del dashboard:", err);
+            // Manejo de errores visuales si es necesario
+        } finally {
+            // Ocultar Loader del Gráfico
             document.getElementById('chart-loader').classList.add('hidden');
             document.getElementById('chart-container').classList.remove('hidden');
+        }
+    }
 
-            const ctx = document.getElementById('portfolioChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.chart_data.labels,
-                    datasets: [{
-                        label: 'Valor Total',
-                        data: data.chart_data.values,
-                        fill: true,
-                        borderColor: '#2563EB',
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Permitir que el h-40 de Tailwind funcione
-                    interaction: { intersect: false, mode: 'index' },
-                    plugins: { legend: { display: false } }, // Ocultar leyenda
-                    scales: {
-                        y: { grid: { display: true, color: '#f3f4f6' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+
+    // --- Inicialización y Event Listeners ---
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 1. Cargar datos iniciales ('Todo' por defecto)
+        updateChartAndData('Todo');
+
+        // 2. Configurar Listeners para los botones de rango de tiempo
+        const buttons = document.querySelectorAll('.timeframe-btn');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                const timeframe = this.getAttribute('data-timeframe');
+                
+                // Desactivar todos los botones
+                buttons.forEach(btn => {
+                    btn.classList.remove('bg-simvest-blue', 'text-white', 'border-simvest-blue');
+                    btn.classList.add('text-gray-500', 'bg-white', 'dark:bg-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600', 'hover:bg-gray-100', 'dark:hover:bg-gray-600');
+                });
+
+                // Activar el botón clicado
+                this.classList.add('bg-simvest-blue', 'text-white', 'border-simvest-blue');
+                this.classList.remove('text-gray-500', 'bg-white', 'dark:bg-gray-700', 'dark:text-gray-300', 'border-gray-200', 'dark:border-gray-600', 'hover:bg-gray-100', 'dark:hover:bg-gray-600');
+
+                // Llamar a la función de actualización de datos
+                updateChartAndData(timeframe);
             });
-
-        })
-        .catch(err => console.error("Error cargando datos dashboard (Frontend):", err));
-});
+        });
+    });
 </script>
 {% endblock %}

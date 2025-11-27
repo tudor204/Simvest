@@ -6,7 +6,8 @@ from datetime import datetime, timedelta
 import yfinance as yf
 
 # Importamos tus servicios (asegúrate de que la ruta sea correcta)
-from app.market_service import get_simple_chart_data
+# **IMPORTANTE: Debemos cambiar el nombre de esta función**
+from app.market_service import get_simple_chart_data, get_portfolio_historical_value # Nueva función
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -20,8 +21,8 @@ def dashboard():
     holdings = Holding.query.filter_by(user_id=current_user.id).all()
     
     transaction_history = Transaction.query.filter_by(user_id=current_user.id)\
-                                   .order_by(desc(Transaction.timestamp))\
-                                   .limit(5).all() # Limitado a 5 para resumen
+                                       .order_by(desc(Transaction.timestamp))\
+                                       .limit(5).all() # Limitado a 5 para resumen
 
     
     return render_template(
@@ -41,13 +42,19 @@ def dashboard_data():
     Esta función hace el trabajo pesado en segundo plano:
     1. Descarga precios en vivo SOLO de las acciones.
     2. Calcula P&L y Totales.
-    3. Genera datos para el gráfico.
+    3. Genera datos para el gráfico, usando el parámetro 'timeframe'.
     """
+    # 1. Obtener el parámetro de tiempo (por defecto 'Todo')
+    timeframe = request.args.get('timeframe', 'Todo').upper() 
+    
     try:
         holdings = Holding.query.filter_by(user_id=current_user.id).all()
         
         # Si no hay inversiones, retornamos datos vacíos rápido
         if not holdings:
+            # Usar la función de simulación simple para llenar el gráfico vacío
+            chart_data = get_simple_chart_data(float(current_user.capital), timeframe=timeframe)
+            
             return jsonify({
                 'summary': {
                     'portfolio_value': 0,
@@ -56,28 +63,29 @@ def dashboard_data():
                     'pnl_pct': 0
                 },
                 'holdings_updates': {},
-                'chart_data': {
-                    'labels': [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(4)][::-1],
-                    'values': [float(current_user.capital)] * 4
-                }
+                'chart_data': chart_data
             })
 
-        # 1. Optimización: Descargar solo los tickers que tiene el usuario (mucho más rápido que todo el mercado)
+        # ... (Toda la lógica de obtención de precios en vivo y cálculo de P&L se mantiene igual) ...
+
+        # 1. Optimización: Descargar solo los tickers que tiene el usuario
         symbols = [h.symbol for h in holdings]
         # Usamos un diccionario para acceso rápido
         live_prices = {}
         
         try:
-            # Descarga batch de yfinance solo para nuestros símbolos
+            # Descarga batch de yfinance solo para nuestros símbolos (Usamos un periodo corto, ya que solo necesitamos el precio actual)
             data = yf.download(symbols, period="5d", auto_adjust=True, progress=False)
             
             for symbol in symbols:
                 # Manejo robusto de pandas/yfinance
                 if len(symbols) == 1:
-                    # Si es solo 1, data['Close'] es una serie, no un DF
-                    price = data['Close'].iloc[-1] if not data.empty else 0
+                    price = data['Close'].iloc[-1] if not data.empty and 'Close' in data else 0
                 else:
-                    price = data['Close'][symbol].iloc[-1] if symbol in data['Close'] else 0
+                    # Usar .get() para manejar la posible ausencia de la columna 'Close' para un símbolo
+                    close_series = data['Close'].get(symbol) 
+                    price = close_series.iloc[-1] if close_series is not None and not close_series.empty else 0
+                
                 live_prices[symbol] = float(price)
                 
         except Exception as e:
@@ -91,6 +99,7 @@ def dashboard_data():
         holdings_updates = {} # Diccionario para actualizar la tabla por ID de holding
 
         for h in holdings:
+            # Fallback para el precio si la API falla
             current_price = live_prices.get(h.symbol, h.purchase_price)
             if current_price <= 0: current_price = h.purchase_price # Fallback
 
@@ -118,10 +127,16 @@ def dashboard_data():
         overall_pnl = total_capital - initial_capital
         overall_pnl_pct = (overall_pnl / initial_capital * 100) if initial_capital > 0 else 0
 
-        # 4. Gráfico (Lógica simplificada para respuesta rápida)
-        # Nota: Para producción, lo ideal es guardar snapshots diarios en DB en lugar de recalcular
-        # Por ahora, usaremos tu lógica de proyección simple basada en el valor actual
-        chart_data = get_simple_chart_data(total_capital)
+        # 4. Gráfico: ¡USAMOS EL NUEVO TIMEFRAME!
+        # Aquí llamarías a una función real que calcula el valor histórico del portafolio
+        # Por ahora, usamos una función simulada que respeta el rango de tiempo
+        
+        # Si tienes holdings reales, llama a la función compleja (que simulo aquí con el mismo nombre, pero que tú deberías implementar)
+        # chart_data = get_portfolio_historical_value(holdings, current_capital, timeframe) 
+        
+        # Por simplicidad y para que funcione con tu simulación:
+        chart_data = get_simple_chart_data(total_capital, timeframe=timeframe) 
+
 
         return jsonify({
             'summary': {
@@ -139,12 +154,11 @@ def dashboard_data():
         return jsonify({'error': str(e)}), 500
 
 
-
 @dashboard_bp.route('/history')
 @login_required
 def history():
     # Tu ruta de historial existente
     all_transactions = Transaction.query.filter_by(user_id=current_user.id)\
-                                      .order_by(desc(Transaction.timestamp))\
-                                      .all()
+                                       .order_by(desc(Transaction.timestamp))\
+                                       .all()
     return render_template('Dashboard/history.html', transactions=all_transactions)
