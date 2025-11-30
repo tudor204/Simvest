@@ -1,10 +1,11 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_user, current_user
 from app import app
-from app.models import User  # Importar modelo
+from app.models import User
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Si ya está logueado, lo mando directo al dashboard para evitar repetir login.
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.dashboard'))
 
@@ -12,20 +13,19 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        # 1. Buscar el usuario por email
+        # Busco al usuario por email para validar el inicio de sesión.
         user = User.query.filter_by(email=email).first()
         
-        # 2. Verificar si el usuario existe y si la contraseña es correcta usando el método check_password
+        # Si el usuario existe y la contraseña coincide, iniciamos sesión.
         if user and user.check_password(password):
-            # 3. Iniciar sesión y establecer la cookie 'remember me'
-            login_user(user, remember=True)
+            login_user(user, remember=True)  # Mantengo la sesión activa si cierra el navegador.
             
-            # 4. Redirigir a la página de destino o a 'home'
+            # Si venía intentando entrar a una página protegida, lo regreso allí.
             next_page = request.args.get('next')
             flash('Sesión iniciada correctamente.', 'success')
             return redirect(next_page) if next_page else redirect(url_for('dashboard.dashboard'))
-        else:
-            # 5. Mostrar error si las credenciales son inválidas
-            flash('Inicio de sesión fallido. Por favor, verifica tu correo y contraseña.', 'error')
+        
+        # Si las credenciales fallan, aviso sin decir cuál dato está mal.
+        flash('Inicio de sesión fallido. Verifica tu correo y contraseña.', 'error')
 
     return render_template('Login/login.html')
