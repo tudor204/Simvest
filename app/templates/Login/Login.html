@@ -10,37 +10,41 @@
         /* Configuración personalizada de Tailwind */
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        /* Añadir un sutil degradado de fondo para un toque elegante */
-        .login-bg {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ff 100%);
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
         }
     </style>
 </head>
 
-<body class="login-bg min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center">
 
     <!-- HEADER/LOGO DE NAVEGACIÓN (NUEVO) -->
-    <header class="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-sm z-50 shadow-sm">
+    <header class="fixed top-0 left-0 w-full bg-white/10 backdrop-blur-md z-50 shadow-sm">
         <div class="container mx-auto px-6 py-4">
             <!-- Logo con enlace a la página de inicio -->
-            <a href="/" class="text-3xl font-extrabold text-blue-600 hover:text-blue-700 transition">
-                Simvest
+            <a href="/" class="text-3xl font-extrabold text-white hover:text-blue-200 transition">
+                Simvest Pro
             </a>
         </div>
     </header>
 
     <!-- Card de Inicio de Sesión -->
-    <div class="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl transition duration-500 hover:shadow-xl border border-gray-100 mx-4">
+    <div class="max-w-md w-full login-card p-10 rounded-3xl shadow-2xl transition duration-500 hover:shadow-xl border border-white/20 mx-4">
         <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-white text-2xl"></i>
+            </div>
             <h1 class="text-4xl font-extrabold text-gray-900 mb-2">
-                Simvest
+                Simvest Pro
             </h1>
             <h2 class="text-2xl font-semibold text-gray-800">
-                Inicia sesión
+                Accede a tu cuenta
             </h2>
-            <p class="mt-2 text-sm text-gray-500">
-                Aprende a invertir de forma segura y gratuita.
+            <p class="mt-2 text-sm text-gray-600">
+                Gestiona tus inversiones con herramientas profesionales.
             </p>
         </div>
 

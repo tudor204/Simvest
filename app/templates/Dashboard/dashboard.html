@@ -2,7 +2,52 @@
 {% block title %}Dashboard - Simvest{% endblock %}
 
 {% block content %}
-<main class="container mx-auto px-6 py-12 space-y-12">
+<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 block transition-all duration-300">
+    <div class="p-6">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Panel de Control</h2>
+      <nav class="space-y-2">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium text-simvest-blue bg-blue-50 dark:bg-blue-900/50 rounded-lg">
+          <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
+        </a>
+        <a href="{{ url_for('market.market') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+          <i class="fas fa-chart-line mr-3"></i> Mercado
+        </a>
+        <a href="{{ url_for('dashboard.history') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+          <i class="fas fa-history mr-3"></i> Historial
+        </a>
+        <a href="{{ url_for('profile.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+          <i class="fas fa-user mr-3"></i> Perfil
+        </a>
+      </nav>
+    </div>
+    <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+      <h3 class="text-sm font-semibold text-gray-800 dark:text-white mb-3">Métricas Rápidas</h3>
+      <div class="space-y-3">
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Capital</span>
+          <span class="text-sm font-medium text-green-600">{{ current_capital | currency }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">Portafolio</span>
+          <span class="text-sm font-medium text-blue-600" id="sidebar-portfolio">$0.00</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-600 dark:text-gray-400">P&L</span>
+          <span class="text-sm font-medium" id="sidebar-pnl">--</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+    <!-- Toggle Sidebar Button -->
+    <button onclick="toggleSidebar()" class="lg:hidden fixed top-20 left-4 z-50 bg-blue-600 text-white p-2 rounded-lg shadow-lg">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="max-w-7xl mx-auto space-y-8">
 
     <!-- SECCIÓN 1: Encabezado de Bienvenida -->
     <section class="flex flex-col md:flex-row md:items-center md:justify-between 
@@ -17,65 +62,87 @@
     </section>
 
     <!-- SECCIÓN 2: Tarjetas de Resumen (KPIs) -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Capital Disponible -->
-        <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-simvest-gray mb-2">💰 Capital Disponible</h3>
-            <p class="text-4xl font-bold text-simvest-blue">{{ current_capital | currency }}</p>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-2xl shadow-lg text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold opacity-90">Capital Disponible</h3>
+                    <p class="text-3xl font-bold mt-2">{{ current_capital | currency }}</p>
+                </div>
+                <i class="fas fa-wallet text-4xl opacity-80"></i>
+            </div>
         </div>
 
-        <!-- Valor del Portafolio (Carga asíncrona) -->
-        <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-simvest-gray mb-2">📈 Valor del Portafolio</h3>
-            <div id="loader-portfolio" class="animate-pulse h-8 w-32 bg-gray-200 rounded"></div>
-            <p id="val-portfolio" class="text-4xl font-bold text-simvest-yellow hidden">$0.00</p>
-            <p class="text-sm text-gray-500 mt-1">Valor de mercado actual</p>
+        <!-- Valor del Portafolio -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-2xl shadow-lg text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold opacity-90">Valor Portafolio</h3>
+                    <div id="loader-portfolio" class="animate-pulse h-8 w-24 bg-white/20 rounded mt-2"></div>
+                    <p id="val-portfolio" class="text-3xl font-bold mt-2 hidden">$0.00</p>
+                </div>
+                <i class="fas fa-chart-line text-4xl opacity-80"></i>
+            </div>
         </div>
 
-        <!-- Capital Total y P&L (Carga asíncrona) -->
-        <div class="p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-simvest-gray mb-2">💼 Capital Total</h3>
-            <div id="loader-total" class="animate-pulse h-8 w-32 bg-gray-200 rounded"></div>
-            <p id="val-total" class="text-4xl font-bold text-simvest-green hidden">$0.00</p>
-            <p id="val-pnl-pct" class="text-sm font-medium mt-1 hidden">--%</p>
+        <!-- Capital Total -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-2xl shadow-lg text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold opacity-90">Capital Total</h3>
+                    <div id="loader-total" class="animate-pulse h-8 w-24 bg-white/20 rounded mt-2"></div>
+                    <p id="val-total" class="text-3xl font-bold mt-2 hidden">$0.00</p>
+                </div>
+                <i class="fas fa-piggy-bank text-4xl opacity-80"></i>
+            </div>
+        </div>
+
+        <!-- P&L -->
+        <div class="bg-gradient-to-br from-orange-500 to-red-500 p-6 rounded-2xl shadow-lg text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold opacity-90">P&L Global</h3>
+                    <p id="val-pnl-pct" class="text-2xl font-bold mt-2 hidden">--</p>
+                </div>
+                <i class="fas fa-percentage text-4xl opacity-80"></i>
+            </div>
         </div>
     </section>
     
-    <!-- SECCIÓN 3: Gráfico de Evolución (Mejorado con Modal) -->
-    <section class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 relative">
+    <!-- SECCIÓN 3: Gráfico de Evolución -->
+    <section class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h2 class="text-2xl font-bold text-simvest-gray dark:text-gray-100">📊 Evolución</h2>
-                <p class="text-sm text-gray-500">Rendimiento histórico de tu cuenta</p>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Evolución del Portafolio</h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">Rendimiento histórico y tendencias de mercado</p>
             </div>
-            
-            <!-- Botón para expandir -->
-            <button onclick="openChartModal()" class="p-2 text-gray-400 hover:text-simvest-blue transition rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Ver en pantalla completa">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-            </button>
+            <div class="flex items-center space-x-3">
+                <button onclick="openChartModal()" class="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200" title="Vista completa">
+                    <i class="fas fa-expand text-lg"></i>
+                </button>
+            </div>
         </div>
 
-        <!-- Botones de Rango de Tiempo (Ahora con clases y data-attributes) -->
-        <div id="timeframe-buttons" class="flex space-x-2 mb-4 overflow-x-auto no-scrollbar">
+        <!-- Botones de Rango de Tiempo -->
+        <div class="flex space-x-3 mb-6 overflow-x-auto">
             {% for tf in ['1D', '1S', '1M', '3M', '1A', 'Todo'] %}
             <button data-timeframe="{{ tf }}"
-                    class="timeframe-btn px-3 py-1 text-xs font-medium rounded-full border transition
-                           {% if tf == 'Todo' %}bg-simvest-blue text-white border-simvest-blue{% else %}text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600{% endif %}">
+                    class="timeframe-btn px-4 py-2 text-sm font-medium rounded-xl border-2 transition-all duration-200 whitespace-nowrap
+                           {% if tf == 'Todo' %}bg-blue-600 text-white border-blue-600 shadow-lg{% else %}text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600 hover:border-blue-300{% endif %}">
                 {{ tf }}
             </button>
             {% endfor %}
         </div>
         
         <!-- Loader del Gráfico -->
-        <div id="chart-loader" class="flex justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-simvest-blue"></div>
-            <span class="ml-3 text-gray-500">Calculando historial...</span>
+        <div id="chart-loader" class="flex flex-col justify-center items-center h-80 bg-gray-50 dark:bg-gray-700 rounded-xl">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
+            <span class="text-gray-500 dark:text-gray-400 font-medium">Analizando datos del mercado...</span>
         </div>
         
-        <!-- Contenedor del Gráfico Pequeño -->
-        <div id="chart-container" class="hidden relative h-64 w-full">
+        <!-- Contenedor del Gráfico -->
+        <div id="chart-container" class="hidden relative h-80 w-full bg-white dark:bg-gray-800 rounded-xl p-4">
             <canvas id="portfolioChart"></canvas> 
         </div>
     </section>
@@ -136,44 +203,59 @@
     </section>
 
     <!-- SECCIÓN 5: Tabla de Mis Inversiones -->
-    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-        <h2 class="text-2xl font-bold text-simvest-blue mb-4">Mis Inversiones</h2>
+    <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Mis Inversiones</h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-1">Activos actuales en tu portafolio</p>
+            </div>
+            <a href="{{ url_for('market.market') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                <i class="fas fa-plus mr-2"></i>Comprar Más
+            </a>
+        </div>
         
         {% if holdings %}
         <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-300">
-                <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 uppercase text-xs font-semibold">
+            <table class="min-w-full text-sm text-left">
+                <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-6 py-3">Símbolo</th>
-                        <th class="px-6 py-3">Cantidad</th>
-                        <th class="px-6 py-3">Compra</th>
-                        <th class="px-6 py-3">Precio Actual</th>
-                        <th class="px-6 py-3">Ganancia/Pérdida</th>
-                        <th class="px-6 py-3 text-center">Acciones</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white">Activo</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white">Cantidad</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white">Precio Compra</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white">Precio Actual</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white">Ganancia/Pérdida</th>
+                        <th class="px-6 py-4 font-semibold text-gray-900 dark:text-white text-center">Valor Total</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                     {% for h in holdings %}
-                    <tr class="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition cursor-pointer group relative" 
-                        id="row-{{ h.id }}"
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 cursor-pointer group" 
                         onclick="window.location='{{ url_for('market.asset_detail', symbol=h.symbol) }}'">
                         
-                        <td class="px-6 py-4 font-bold text-simvest-blue group-hover:underline">
-                            {{ h.name }}
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mr-3">
+                                    <i class="fas fa-chart-line text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600">{{ h.name }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ h.symbol }}</div>
+                                </div>
+                            </div>
                         </td>
-                        <td class="px-6 py-4">{{ "{:,.2f}".format(h.quantity) }}</td>
-                        <td class="px-6 py-4">{{ h.purchase_price | currency }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ "{:,.2f}".format(h.quantity) }}</td>
+                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ h.purchase_price | currency }}</td>
                         
                         <td class="px-6 py-4">
                             <span id="price-{{ h.id }}" class="text-gray-400 animate-pulse">Cargando...</span>
                         </td>
-                        <td class="px-6 py-4 font-semibold">
+                        <td class="px-6 py-4">
                             <span id="gain-{{ h.id }}" class="text-gray-400 animate-pulse">--</span>
                         </td>
                         
                         <td class="px-6 py-4 text-center">
-                            <span class="font-mono text-sm font-semibold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-lg">
-                                {{ "{:,.4f}".format(h.quantity) }}
+                            <span class="font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-lg">
+                                --
                             </span>
                         </td>
                     </tr>
@@ -182,9 +264,15 @@
             </table>
         </div>
         {% else %}
-        <div class="text-center py-8">
-            <p class="text-gray-500 italic mb-2">Aún no tienes inversiones activas.</p>
-            <a href="{{ url_for('market.market') }}" class="text-simvest-blue hover:underline text-sm">Ir al mercado para comprar</a>
+        <div class="text-center py-12">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No tienes inversiones activas</h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">Comienza tu viaje de inversión explorando el mercado</p>
+            <a href="{{ url_for('market.market') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
+                Explorar Mercado
+            </a>
         </div>
         {% endif %}
     </section>
@@ -419,6 +507,13 @@
             elTotal.innerText = currencyFmt.format(data.summary.total_capital);
             elTotal.classList.remove('hidden');
             
+            // Actualizar sidebar
+            document.getElementById('sidebar-portfolio').innerText = currencyFmt.format(data.summary.portfolio_value);
+            const sidebarPnl = document.getElementById('sidebar-pnl');
+            const pnlInfo = formatPnl(data.summary.pnl_pct);
+            sidebarPnl.innerText = pnlInfo.text;
+            sidebarPnl.className = `text-sm font-medium ${pnlInfo.colorClass}`;
+            
             const elPnl = document.getElementById('val-pnl-pct');
             const pnlInfo = formatPnl(data.summary.pnl_pct);
             elPnl.innerText = pnlInfo.text + ' Global';
@@ -481,5 +576,13 @@
             });
         });
     });
+
+    // Función para toggle del sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('hidden');
+    }
 </script>
+  </main>
+</div>
 {% endblock %}

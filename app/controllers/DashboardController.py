@@ -4,9 +4,33 @@ from app.models import Holding, Transaction
 from sqlalchemy import desc
 from datetime import datetime, timedelta
 import yfinance as yf
+import time
+import concurrent.futures
 
 # Blueprint del dashboard: aquí centralizo todo lo que muestra datos del portafolio.
 from app.market_service import get_simple_chart_data, get_portfolio_historical_value
+
+# Caché para precios de activos
+price_cache = {}
+CACHE_DURATION = 300  # 5 minutos
+
+def get_cached_price(symbol):
+    """Obtiene precio con caché para evitar llamadas repetidas a yfinance"""
+    now = time.time()
+    if symbol in price_cache and now - price_cache[symbol]['timestamp'] < CACHE_DURATION:
+        return price_cache[symbol]['price']
+    
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        price = info.get('currentPrice') or info.get('regularMarketPrice') or info.get('navPrice')
+        if price:
+            price_cache[symbol] = {'price': float(price), 'timestamp': now}
+            return float(price)
+    except Exception as e:
+        print(f"Error obteniendo precio para {symbol}: {e}")
+    
+    return 0.0
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -61,25 +85,16 @@ def dashboard_data():
         symbols = [h.symbol for h in holdings]
         live_prices = {}
 
-        # Intento obtener precios actuales para todos los símbolos a la vez.
-        try:
-            data = yf.download(symbols, period="5d", auto_adjust=True, progress=False)
-
-            for symbol in symbols:
-                # Manejo casos donde yfinance falla o viene vacío.
-                if len(symbols) == 1:
-                    price = data['Close'].iloc[-1] if not data.empty and 'Close' in data else 0
-                else:
-                    close_series = data['Close'].get(symbol)
-                    price = close_series.iloc[-1] if close_series is not None and not close_series.empty else 0
-                
-                live_prices[symbol] = float(price)
-
-        except Exception as e:
-            print(f"Error API YFinance: {e}")
-            # Si falla todo, dejo los precios en cero para no romper nada.
-            for s in symbols:
-                live_prices[s] = 0
+        # Usar paralelismo para obtener precios más rápido
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_symbol = {executor.submit(get_cached_price, symbol): symbol for symbol in symbols}
+            for future in concurrent.futures.as_completed(future_to_symbol):
+                symbol = future_to_symbol[future]
+                try:
+                    live_prices[symbol] = future.result()
+                except Exception as e:
+                    print(f"Error obteniendo precio para {symbol}: {e}")
+                    live_prices[symbol] = 0.0
 
         # ==========================
         # Cálculo de valores

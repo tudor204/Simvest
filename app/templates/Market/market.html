@@ -4,97 +4,101 @@
 <style>
 /* Tabs */
 .category-tab {
-    @apply text-gray-700 dark:text-gray-300 bg-transparent transition-all duration-200;
+    @apply text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 transition-all duration-200 rounded-xl;
 }
 .category-tab:hover {
-    @apply bg-blue-100 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300;
+    @apply bg-blue-50 dark:bg-blue-800/30 text-blue-700 dark:text-blue-300 border-blue-300;
 }
 .category-tab.active-tab {
-    @apply bg-blue-600 text-white font-semibold shadow-md;
+    @apply bg-blue-600 text-white border-blue-600 shadow-lg;
 }
 
 /* Cards */
 .asset-card {
-    border-radius: 1rem;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    border: 1px solid;
+    @apply rounded-2xl p-6 text-center transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl border-2;
 }
 .asset-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 6px 14px rgba(37,99,235,0.15);
-}
-
-/* Dark mode */
-.dark .asset-card {
-    color: #f3f4f6;
+    @apply transform scale-105;
 }
 
 /* Asset text */
 .asset-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
+    @apply text-lg font-bold mb-2;
 }
 .asset-symbol {
-    font-size: 0.9rem;
-    font-family: monospace;
+    @apply text-sm font-mono opacity-80;
 }
 
 /* Grid layout */
 .asset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.2rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
 }
 </style>
 {% endblock styles %}
 
 {% block content %}
-<div class="container mx-auto mt-10 px-5" data-aos="fade-up">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Mercado de Inversión</h1>
-
-    <!-- Categorías -->
-    <nav id="category-tabs" class="flex flex-wrap gap-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-inner mb-6">
-        <button data-category="all" class="category-tab active-tab text-sm font-medium px-4 py-2 rounded-lg">Todos</button>
-        <button data-category="acciones" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Acciones</button>
-        <button data-category="fondos" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Fondos</button>
-        <button data-category="etfs" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">ETFs</button>
-        <button data-category="renta-fija" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Renta Fija</button>
-        <button data-category="crypto" class="category-tab text-sm font-medium px-4 py-2 rounded-lg">Criptomonedas</button>
-    </nav>
-
-    <!-- Buscador -->
-    <div class="mb-6">
-        <input id="search-bar" 
-               type="text" 
-               placeholder="🔍 Buscar activo o símbolo..."
-               class="w-full sm:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition" />
-    </div>
-
-    <!-- Lista de activos -->
-    <div id="product-grid" class="asset-grid">
-        {% set category_colors = {
-            'acciones': 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
-            'fondos': 'border-amber-500 bg-amber-50 dark:bg-amber-900 text-amber-700 dark:text-amber-300',
-            'etfs': 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300',
-            'renta-fija': 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300',
-            'crypto': 'border-fuchsia-500 bg-fuchsia-50 dark:bg-fuchsia-900 text-fuchsia-700 dark:text-fuchsia-300'
-        } %}
-        {% for product in market_universe %}
-        <div class="asset-card {{ category_colors.get(product.category, 'border-gray-300 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100') }}"
-             data-category="{{ product.category }}"
-             data-name="{{ product.name|lower }}"
-             data-symbol="{{ product.symbol|lower }}"
-             onclick="window.location.href='{{ url_for('market.asset_detail', symbol=product.symbol) }}'">
-            <h3 class="asset-name">{{ product.name }}</h3>
-            <p class="asset-symbol">{{ product.symbol }}</p>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <div class="max-w-7xl mx-auto px-8 py-16">
+      <div class="text-center">
+        <h1 class="text-5xl font-bold mb-4">Mercado Global</h1>
+        <p class="text-xl opacity-90 mb-8">Descubre oportunidades de inversión en acciones, ETFs, criptomonedas y más</p>
+        <div class="max-w-md mx-auto">
+          <input id="search-bar" 
+                 type="text" 
+                 placeholder="Buscar activos..."
+                 class="w-full px-6 py-4 rounded-xl shadow-lg focus:ring-4 focus:ring-white/30 focus:outline-none bg-white/10 backdrop-blur-sm text-white placeholder-white/70 border border-white/20" />
         </div>
-        {% endfor %}
+      </div>
     </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-8 py-12">
+    <!-- Filtros -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Filtrar por Categoría</h2>
+      <nav id="category-tabs" class="flex flex-wrap gap-3">
+        <button data-category="all" class="category-tab active-tab px-6 py-3 rounded-xl text-sm font-medium">Todos los Activos</button>
+        <button data-category="acciones" class="category-tab px-6 py-3 rounded-xl text-sm font-medium">Acciones</button>
+        <button data-category="fondos" class="category-tab px-6 py-3 rounded-xl text-sm font-medium">Fondos</button>
+        <button data-category="etfs" class="category-tab px-6 py-3 rounded-xl text-sm font-medium">ETFs</button>
+        <button data-category="renta-fija" class="category-tab px-6 py-3 rounded-xl text-sm font-medium">Renta Fija</button>
+        <button data-category="crypto" class="category-tab px-6 py-3 rounded-xl text-sm font-medium">Criptomonedas</button>
+      </nav>
+    </div>
+
+    <!-- Grid de Activos -->
+    <div id="product-grid" class="asset-grid">
+      {% set category_colors = {
+          'acciones': 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 text-blue-700 dark:text-blue-300',
+          'fondos': 'border-amber-500 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900 dark:to-amber-800 text-amber-700 dark:text-amber-300',
+          'etfs': 'border-emerald-500 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900 dark:to-emerald-800 text-emerald-700 dark:text-emerald-300',
+          'renta-fija': 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 text-indigo-700 dark:text-indigo-300',
+          'crypto': 'border-fuchsia-500 bg-gradient-to-br from-fuchsia-50 to-fuchsia-100 dark:from-fuchsia-900 dark:to-fuchsia-800 text-fuchsia-700 dark:text-fuchsia-300'
+      } %}
+      {% for product in market_universe %}
+      <div class="asset-card {{ category_colors.get(product.category, 'border-gray-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-700 dark:to-gray-600 text-gray-900 dark:text-gray-100') }}"
+           data-category="{{ product.category }}"
+           data-name="{{ product.name|lower }}"
+           data-symbol="{{ product.symbol|lower }}"
+           onclick="window.location.href='{{ url_for('market.asset_detail', symbol=product.symbol) }}'">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-chart-line text-2xl"></i>
+          </div>
+          <h3 class="asset-name text-lg font-bold">{{ product.name }}</h3>
+          <p class="asset-symbol text-sm font-mono opacity-75">{{ product.symbol }}</p>
+          <div class="mt-3 px-3 py-1 bg-white/10 rounded-full text-xs font-medium">
+            {{ product.category | title }}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </div>
 {% endblock content %}
 
