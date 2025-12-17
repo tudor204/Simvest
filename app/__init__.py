@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from .config import Config
 from flask_migrate import Migrate
+from flask_caching import Cache
 
 # =========================================================
 # 0. Cargar variables de entorno
@@ -17,7 +18,8 @@ load_dotenv()
 db = SQLAlchemy()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-migrate = Migrate() 
+migrate = Migrate()
+cache = Cache(config={'CACHE_TYPE': 'SimpleCache'})
 
 # =========================================================
 # 2. Inicializar la app
@@ -27,6 +29,7 @@ app.config.from_object(Config)
 
 db.init_app(app)
 bcrypt.init_app(app)
+cache.init_app(app)
 
 # --- CONFIGURACIÓN LOGIN ---
 login_manager.init_app(app)

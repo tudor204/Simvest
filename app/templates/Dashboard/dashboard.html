@@ -11,13 +11,13 @@
         <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium text-simvest-blue bg-blue-50 dark:bg-blue-900/50 rounded-lg">
           <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
         </a>
-        <a href="{{ url_for('market.market') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <a href="{{ url_for('market.market') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
           <i class="fas fa-chart-line mr-3"></i> Mercado
         </a>
-        <a href="{{ url_for('dashboard.history') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <a href="{{ url_for('dashboard.history') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
           <i class="fas fa-history mr-3"></i> Historial
         </a>
-        <a href="{{ url_for('profile.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+        <a href="{{ url_for('profile.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
           <i class="fas fa-user mr-3"></i> Perfil
         </a>
       </nav>
@@ -26,15 +26,15 @@
       <h3 class="text-sm font-semibold text-gray-800 dark:text-white mb-3">Métricas Rápidas</h3>
       <div class="space-y-3">
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600 dark:text-gray-400">Capital</span>
+          <span class="text-sm text-gray-800 dark:text-gray-400">Capital</span>
           <span class="text-sm font-medium text-green-600">{{ current_capital | currency }}</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600 dark:text-gray-400">Portafolio</span>
+          <span class="text-sm text-gray-800 dark:text-gray-400">Portafolio</span>
           <span class="text-sm font-medium text-blue-600" id="sidebar-portfolio">$0.00</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-sm text-gray-600 dark:text-gray-400">P&L</span>
+          <span class="text-sm text-gray-800 dark:text-gray-400">P&L</span>
           <span class="text-sm font-medium" id="sidebar-pnl">--</span>
         </div>
       </div>
@@ -115,7 +115,7 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Evolución del Portafolio</h2>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Rendimiento histórico y tendencias de mercado</p>
+                <p class="text-gray-800 dark:text-gray-400 mt-1">Rendimiento histórico y tendencias de mercado</p>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="openChartModal()" class="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200" title="Vista completa">
@@ -207,7 +207,7 @@
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Mis Inversiones</h2>
-                <p class="text-gray-600 dark:text-gray-400 mt-1">Activos actuales en tu portafolio</p>
+                <p class="text-gray-800 dark:text-gray-400 mt-1">Activos actuales en tu portafolio</p>
             </div>
             <a href="{{ url_for('market.market') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
                 <i class="fas fa-plus mr-2"></i>Comprar Más
@@ -244,7 +244,7 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">{{ "{:,.2f}".format(h.quantity) }}</td>
-                        <td class="px-6 py-4 text-gray-600 dark:text-gray-300">{{ h.purchase_price | currency }}</td>
+                        <td class="px-6 py-4 text-gray-800 dark:text-gray-300">{{ h.purchase_price | currency }}</td>
                         
                         <td class="px-6 py-4">
                             <span id="price-{{ h.id }}" class="text-gray-400 animate-pulse">Cargando...</span>
@@ -269,7 +269,7 @@
                 <i class="fas fa-chart-line text-4xl text-gray-400"></i>
             </div>
             <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No tienes inversiones activas</h3>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">Comienza tu viaje de inversión explorando el mercado</p>
+            <p class="text-gray-800 dark:text-gray-400 mb-6">Comienza tu viaje de inversión explorando el mercado</p>
             <a href="{{ url_for('market.market') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
                 Explorar Mercado
             </a>
@@ -326,6 +326,9 @@
     let bigChartInstance = null;
     let chartDataCache = null; 
     let activeTimeframe = 'Todo'; // Estado inicial
+
+    // Datos iniciales desde el servidor
+    const initialData = {{ initial_data | tojson }};
 
     // Ruta de la API de datos (debe ser accesible globalmente si es necesario)
     const API_URL = "{{ url_for('dashboard.dashboard_data') }}";
@@ -456,6 +459,76 @@
     }
 
     /**
+     * Actualiza la UI con los datos proporcionados (sin fetch)
+     * @param {object} data - Los datos del dashboard
+     * @param {string} timeframe - El timeframe actual
+     */
+    function updateUI(data, timeframe) {
+        // 1. Destruir y Crear Gráfico Pequeño
+        if (smallChartInstance) {
+            smallChartInstance.destroy();
+        }
+        
+        chartDataCache = data.chart_data; // Actualizar caché
+        activeTimeframe = timeframe; // Actualizar estado activo
+        
+        const ctxSmall = document.getElementById('portfolioChart').getContext('2d');
+        smallChartInstance = new Chart(ctxSmall, createChartConfig(
+            ctxSmall, 
+            data.chart_data.labels, 
+            data.chart_data.values,
+            false
+        ));
+
+        // 2. Actualizar Datos Numéricos
+        
+        // Ocultar loaders de KPIs
+        document.getElementById('loader-portfolio').classList.add('hidden');
+        document.getElementById('loader-total').classList.add('hidden');
+
+        const elPortfolio = document.getElementById('val-portfolio');
+        elPortfolio.innerText = currencyFmt.format(data.summary.portfolio_value);
+        elPortfolio.classList.remove('hidden');
+
+        const elTotal = document.getElementById('val-total');
+        elTotal.innerText = currencyFmt.format(data.summary.total_capital);
+        elTotal.classList.remove('hidden');
+        
+        // Actualizar sidebar
+        document.getElementById('sidebar-portfolio').innerText = currencyFmt.format(data.summary.portfolio_value);
+        const sidebarPnl = document.getElementById('sidebar-pnl');
+        const pnlInfo = formatPnl(data.summary.pnl_pct);
+        sidebarPnl.innerText = pnlInfo.text;
+        sidebarPnl.className = `text-sm font-medium ${pnlInfo.colorClass}`;
+        
+        const elPnl = document.getElementById('val-pnl-pct');
+        const pnlInfo2 = formatPnl(data.summary.pnl_pct);
+        elPnl.innerText = pnlInfo2.text + ' Global';
+        elPnl.className = `text-sm font-medium mt-1 ${pnlInfo2.colorClass}`;
+        elPnl.classList.remove('hidden');
+
+        // 3. Actualizar Tabla de Inversiones (Filas)
+        for (const [holdingId, info] of Object.entries(data.holdings_updates)) {
+            const priceCell = document.getElementById(`price-${holdingId}`);
+            if (priceCell) {
+                priceCell.innerText = currencyFmt.format(info.current_price);
+                priceCell.classList.remove('text-gray-400', 'animate-pulse');
+            }
+            const gainCell = document.getElementById(`gain-${holdingId}`);
+            if (gainCell) {
+                const gainData = formatPnl(info.pct);
+                gainCell.innerText = `${currencyFmt.format(info.gain)} (${gainData.text})`;
+                gainCell.classList.remove('text-gray-400', 'animate-pulse');
+                gainCell.className = `px-6 py-4 font-semibold ${gainData.colorClass}`;
+            }
+        }
+
+        // Ocultar Loader del Gráfico
+        document.getElementById('chart-loader').classList.add('hidden');
+        document.getElementById('chart-container').classList.remove('hidden');
+    }
+
+    /**
      * Hace el fetch de los datos y actualiza el gráfico y los KPIs
      * @param {string} timeframe - El rango de tiempo a solicitar (e.g., '1D', 'Todo').
      */
@@ -474,68 +547,8 @@
                 throw new Error(data.error);
             }
 
-            // 1. Destruir y Crear Gráfico Pequeño
-            if (smallChartInstance) {
-                smallChartInstance.destroy();
-            }
-            
-            chartDataCache = data.chart_data; // Actualizar caché
-            activeTimeframe = timeframe; // Actualizar estado activo
-            
-            const ctxSmall = document.getElementById('portfolioChart').getContext('2d');
-            smallChartInstance = new Chart(ctxSmall, createChartConfig(
-                ctxSmall, 
-                data.chart_data.labels, 
-                data.chart_data.values,
-                false
-            ));
-
-            // 2. Actualizar Datos Numéricos (Solo la primera vez si es necesario, pero lo hacemos para consistencia)
-            
-            // Aunque el `timeframe` sólo cambia el gráfico, la primera carga (y cualquier carga) 
-            // siempre trae los últimos valores de KPIs y Holdings:
-            
-            // Ocultar loaders de KPIs (asumiendo que solo se muestran en la carga inicial)
-            document.getElementById('loader-portfolio').classList.add('hidden');
-            document.getElementById('loader-total').classList.add('hidden');
-
-            const elPortfolio = document.getElementById('val-portfolio');
-            elPortfolio.innerText = currencyFmt.format(data.summary.portfolio_value);
-            elPortfolio.classList.remove('hidden');
-
-            const elTotal = document.getElementById('val-total');
-            elTotal.innerText = currencyFmt.format(data.summary.total_capital);
-            elTotal.classList.remove('hidden');
-            
-            // Actualizar sidebar
-            document.getElementById('sidebar-portfolio').innerText = currencyFmt.format(data.summary.portfolio_value);
-            const sidebarPnl = document.getElementById('sidebar-pnl');
-            const pnlInfo = formatPnl(data.summary.pnl_pct);
-            sidebarPnl.innerText = pnlInfo.text;
-            sidebarPnl.className = `text-sm font-medium ${pnlInfo.colorClass}`;
-            
-            const elPnl = document.getElementById('val-pnl-pct');
-            const pnlInfo = formatPnl(data.summary.pnl_pct);
-            elPnl.innerText = pnlInfo.text + ' Global';
-            elPnl.className = `text-sm font-medium mt-1 ${pnlInfo.colorClass}`;
-            elPnl.classList.remove('hidden');
-
-
-            // 3. Actualizar Tabla de Inversiones (Filas)
-            for (const [holdingId, info] of Object.entries(data.holdings_updates)) {
-                const priceCell = document.getElementById(`price-${holdingId}`);
-                if (priceCell) {
-                    priceCell.innerText = currencyFmt.format(info.current_price);
-                    priceCell.classList.remove('text-gray-400', 'animate-pulse');
-                }
-                const gainCell = document.getElementById(`gain-${holdingId}`);
-                if (gainCell) {
-                    const gainData = formatPnl(info.pct);
-                    gainCell.innerText = `${currencyFmt.format(info.gain)} (${gainData.text})`;
-                    gainCell.classList.remove('text-gray-400', 'animate-pulse');
-                    gainCell.className = `px-6 py-4 font-semibold ${gainData.colorClass}`;
-                }
-            }
+            // Usar updateUI para actualizar
+            updateUI(data, timeframe);
 
         } catch (err) {
             console.error("Fallo al actualizar datos del dashboard:", err);
@@ -551,8 +564,8 @@
     // --- Inicialización y Event Listeners ---
     document.addEventListener('DOMContentLoaded', function() {
         
-        // 1. Cargar datos iniciales ('Todo' por defecto)
-        updateChartAndData('Todo');
+        // 1. Cargar datos iniciales desde el servidor (sin fetch)
+        updateUI(initialData, 'Todo');
 
         // 2. Configurar Listeners para los botones de rango de tiempo
         const buttons = document.querySelectorAll('.timeframe-btn');

@@ -5,7 +5,7 @@
     
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Configuración de la Cuenta</h1>
-        <p class="text-gray-500 dark:text-gray-400">Actualiza tu información personal y gestiona tu seguridad.</p>
+        <p class="text-gray-600 dark:text-gray-400">Actualiza tu información personal y gestiona tu seguridad.</p>
     </div>
 
     <div class="space-y-8">
@@ -67,7 +67,7 @@
                         <textarea id="bio" name="bio" rows="3"
                             class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-simvest-blue focus:border-simvest-blue shadow-sm sm:text-sm transition"
                             placeholder="Cuéntanos un poco sobre ti...">{{ user.bio or '' }}</textarea>
-                        <p class="mt-2 text-xs text-gray-500">Breve descripción para tu perfil público.</p>
+                        <p class="mt-2 text-xs text-gray-600">Breve descripción para tu perfil público.</p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                        <a href="{{ url_for('profile.profile') }}" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition">
+                        <a href="{{ url_for('profile.profile') }}" class="text-sm font-medium text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition">
                             Cancelar
                         </a>
                         <button type="submit" class="bg-simvest-blue hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition duration-200 transform hover:scale-[1.02]">

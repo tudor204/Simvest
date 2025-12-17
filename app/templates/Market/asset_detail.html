@@ -10,7 +10,7 @@
         @apply bg-blue-600 text-white;
     }
     .period-btn:not(.active) {
-        @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+        @apply bg-gray-200 text-black dark:text-white hover:bg-gray-300;
     }
     .info-card {
         @apply bg-white p-6 rounded-xl shadow-lg border border-gray-100;
@@ -20,7 +20,7 @@
     }
     /* Estilos antiguos de tabs por si acaso, aunque usamos el nuevo diseño */
     .tab-btn {
-        @apply flex-1 pb-3 text-center font-semibold text-gray-500 border-b-2 border-transparent transition-all hover:text-gray-700;
+        @apply flex-1 pb-3 text-center font-semibold text-black dark:text-white border-b-2 border-transparent transition-all hover:text-black dark:hover:text-white;
     }
 </style>
 {% endblock %}
@@ -34,7 +34,7 @@
             </svg>
             Volver al Mercado
         </a>
-        <h1 class="text-4xl font-bold text-gray-900 mt-2">{{ asset.name }} <span class="text-gray-400 text-2xl font-medium">({{ asset.symbol }})</span></h1>
+        <h1 class="text-4xl font-bold text-black dark:text-white mt-2">{{ asset.name }} <span class="text-black dark:text-white text-2xl font-medium">({{ asset.symbol }})</span></h1>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -70,21 +70,21 @@
             {% endif %}
 
             <div class="info-card {% if asset.category == 'fondos' %}fund-specific{% endif %}">
-                <h2 class="text-xl font-semibold mb-4 text-gray-800">Información de Mercado</h2>
+                <h2 class="text-xl font-semibold mb-4 text-black dark:text-white">Información de Mercado</h2>
                 <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span class="text-gray-600">Categoría:</span><span class="font-medium bg-gray-100 px-2 py-0.5 rounded">{{ asset.category | title }}</span></div>
+                    <div class="flex justify-between"><span class="text-black dark:text-white">Categoría:</span><span class="font-medium bg-gray-100 px-2 py-0.5 rounded">{{ asset.category | title }}</span></div>
                     
                     {% if asset.category == 'fondos' %}
                         {% if asset.total_assets and asset.total_assets != 'N/A' %}
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Activos Totales:</span>
+                            <span class="text-black dark:text-white">Activos Totales:</span>
                             <span class="font-medium">{{ asset.total_assets|float | currency }}</span>
                         </div>
                         {% endif %}
                     {% else %}
                         {% if asset.market_cap and asset.market_cap != 'N/A' %}
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Market Cap:</span>
+                            <span class="text-black dark:text-white">Market Cap:</span>
                             <span class="font-medium">
                                 {% if asset.market_cap is number %}
                                     {{ asset.market_cap | currency }}
@@ -98,8 +98,8 @@
 
                     <div class="border-t border-gray-100 pt-3 mt-3">
                         <div class="flex justify-between items-end">
-                            <span class="text-gray-600 mb-1">Precio Actual:</span>
-                            <span class="font-bold text-2xl text-gray-900">
+                            <span class="text-black dark:text-white mb-1">Precio Actual:</span>
+                            <span class="font-bold text-2xl text-black dark:text-white">
                                 {% if asset.current_price and asset.current_price != 'N/A' %}
                                     {{ asset.current_price | currency }}
                                 {% else %}
@@ -108,8 +108,8 @@
                             </span>
                         </div>
                         <div class="flex justify-between mt-1">
-                            <span class="text-gray-600 text-xs">Cierre Anterior:</span>
-                            <span class="text-gray-500 text-xs">
+                            <span class="text-black dark:text-white text-xs">Cierre Anterior:</span>
+                            <span class="text-black dark:text-white text-xs">
                                 {% if asset.previous_close and asset.previous_close != 'N/A' %}
                                     {{ asset.previous_close | currency }}
                                 {% else %}
@@ -133,7 +133,7 @@
                     
                     {% if holding %}
                     <button id="tab-sell" onclick="switchOperation('sell')"
-                            class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-gray-500 hover:text-gray-700 hover:bg-gray-200/50">
+                            class="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 text-gray-700 dark:text-white hover:text-gray-700 hover:bg-gray-200/50">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
                         </svg>
@@ -149,7 +149,7 @@
                             Unidades
                         </button>
                         <button type="button" id="mode-amount" data-mode="amount"
-                                class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors text-gray-500 hover:bg-gray-200">
+                                class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-colors text-gray-700 dark:text-white hover:bg-gray-200">
                             Capital (€)
                         </button>
                     </div>
@@ -158,7 +158,7 @@
                         <input type="hidden" name="symbol" value="{{ asset.symbol }}">
                         
                         <div id="container-quantity" class="mb-4">
-                            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="quantity" class="block text-sm font-medium text-gray-800 dark:text-white mb-2">
                                 Cantidad de Unidades
                             </label>
                             <input type="number" id="quantity" name="quantity" min="0.00001" step="any"
@@ -167,18 +167,18 @@
                         </div>
                 
                         <div id="container-amount" class="mb-4 hidden">
-                            <label for="amount_to_buy" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="amount_to_buy" class="block text-sm font-medium text-gray-800 dark:text-white mb-2">
                                 Monto a Invertir (€)
                             </label>
                             <div class="relative">
-                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <span class="absolute left-3 top-3 text-black dark:text-white">$</span>
                                 <input type="number" id="amount_to_buy" name="amount_to_buy" min="0.01" step="0.01"
                                         class="w-full border border-gray-300 rounded-lg p-3 pl-7 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                         placeholder="500.00">
                             </div>
-                            <p class="text-xs text-gray-500 mt-2 flex justify-between">
+                            <p class="text-xs text-black dark:text-white mt-2 flex justify-between">
                                 <span>Disponible:</span>
-                                <span class="font-medium text-gray-700">{{ current_user.capital | currency if current_user.is_authenticated else 'N/A' }}</span>
+                                <span class="font-medium text-gray-800 dark:text-white">{{ current_user.capital | currency if current_user.is_authenticated else 'N/A' }}</span>
                             </p>
                         </div>
                 
@@ -207,7 +207,7 @@
                         </div>
 
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad a Vender</label>
+                            <label class="block text-sm font-medium text-black dark:text-white mb-2">Cantidad a Vender</label>
                             <div class="relative">
                                 <input type="number" id="quantity_to_sell" name="quantity_to_sell" 
                                         max="{{ holding.quantity }}" step="any" min="0.00001" required
@@ -237,8 +237,8 @@
             </div>
             
             <div class="info-card">
-                <h2 class="text-lg font-semibold mb-3 text-gray-800">Sobre {{ asset.name }}</h2>
-                <p class="text-sm text-gray-600 leading-relaxed text-justify">
+                <h2 class="text-lg font-semibold mb-3 text-black dark:text-white">Sobre {{ asset.name }}</h2>
+                <p class="text-sm text-black dark:text-white leading-relaxed text-justify">
                     {{ asset.description }}
                 </p>
             </div>
@@ -259,19 +259,19 @@
                 <div class="h-[400px] w-full relative">
                     <canvas id="historicalChart"></canvas>
                     <div id="noDataMessage" class="hidden absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-80">
-                        <p class="text-gray-500 text-lg">No hay datos históricos disponibles.</p>
+                        <p class="text-black dark:text-white text-lg">No hay datos históricos disponibles.</p>
                     </div>
                 </div>
             </div>
 
             {% if history %}
             <div class="info-card">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <h3 class="text-lg font-bold text-black dark:text-white mb-4 flex items-center gap-2">
                     <span>📜</span> Historial de Transacciones
                 </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
-                        <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                        <thead class="text-xs text-black dark:text-white uppercase bg-gray-50 border-b">
                             <tr>
                                 <th class="px-4 py-3 font-medium">Tipo</th>
                                 <th class="px-4 py-3 font-medium">Fecha</th>
@@ -290,9 +290,9 @@
                                         <span class="text-green-600 bg-green-50 px-2 py-1 rounded text-xs">COMPRA</span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3 text-gray-500">{{ t.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+                                <td class="px-4 py-3 text-gray-600">{{ t.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
                                 <td class="px-4 py-3 text-right font-mono">{{ "{:,.4f}".format(t.quantity) }}</td>
-                                <td class="px-4 py-3 text-right text-gray-600">{{ t.price_per_unit | currency }}</td>
+                                <td class="px-4 py-3 text-right text-black dark:text-white">{{ t.price_per_unit | currency }}</td>
                                 <td class="px-4 py-3 text-right font-semibold text-gray-800">{{ t.total_amount | currency }}</td>
                             </tr>
                             {% endfor %}
