@@ -17,28 +17,67 @@ profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 @login_required
 def profile():
     """
-    Muestra la página principal del perfil del usuario.
-    Calcula estadísticas visibles como el total invertido
-    y la cantidad de transacciones realizadas.
+    Muestra el dashboard del perfil con estadísticas profesionales:
+    - Total invertido, ganancia/pérdida, rentabilidad
+    - Activos en portafolio, transacciones
+    - Distribución de activos y resumen de actividad reciente
     """
 
-    # 1. Calcular el total invertido usando la relación holdings del usuario
+    # Inicializar variables
     total_invested = 0
-    if hasattr(current_user, 'holdings'):
-        for holding in current_user.holdings:
-            total_invested += (holding.quantity * holding.purchase_price)
-
-    # 2. Contar cuántas transacciones ha realizado el usuario
+    total_current_value = 0
+    active_holdings = 0
+    unrealized_gain = 0
     transactions_count = 0
-    if hasattr(current_user, 'transactions'):
-        transactions_count = len(current_user.transactions)
+    recent_transactions = []
+    holdings_list = []
 
-    # 3. Renderizar la plantilla con las variables calculadas
+    if hasattr(current_user, 'holdings') and current_user.holdings:
+        for holding in current_user.holdings:
+            purchase_cost = holding.quantity * holding.purchase_price
+            current_value = holding.quantity * (holding.current_price or holding.purchase_price)
+            
+            total_invested += purchase_cost
+            total_current_value += current_value
+            unrealized_gain += (current_value - purchase_cost)
+            
+            if holding.quantity > 0:
+                active_holdings += 1
+                holdings_list.append({
+                    'name': holding.asset.name,
+                    'symbol': holding.asset.symbol,
+                    'quantity': holding.quantity,
+                    'purchase_price': holding.purchase_price,
+                    'current_price': holding.current_price or holding.purchase_price,
+                    'percentage': ((current_value - purchase_cost) / purchase_cost * 100) if purchase_cost > 0 else 0
+                })
+
+    # Calcular porcentaje de rentabilidad
+    roi_percentage = 0
+    if total_invested > 0:
+        roi_percentage = (unrealized_gain / total_invested) * 100
+
+    # Obtener transacciones recientes (últimas 5)
+    if hasattr(current_user, 'transactions') and current_user.transactions:
+        transactions_count = len(current_user.transactions)
+        recent_transactions = sorted(
+            current_user.transactions, 
+            key=lambda x: x.created_at, 
+            reverse=True
+        )[:5]
+
+    # Renderizar plantilla con variables mejoradas
     return render_template(
         'Profile/profile.html',
         user=current_user,
         total_invested=total_invested,
-        transactions_count=transactions_count
+        total_current_value=total_current_value,
+        unrealized_gain=unrealized_gain,
+        roi_percentage=roi_percentage,
+        active_holdings=active_holdings,
+        transactions_count=transactions_count,
+        recent_transactions=recent_transactions,
+        holdings_list=holdings_list
     )
 
 
