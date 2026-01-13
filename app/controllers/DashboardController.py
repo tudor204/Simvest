@@ -1,12 +1,15 @@
 from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
-from app.models import Holding, Transaction
+from app.models import Holding, Transaction, SimulationConfig
 from sqlalchemy import desc
 from datetime import datetime, timedelta
 import yfinance as yf
 import time
 import concurrent.futures
 from app import cache
+
+# Motor de simulación financiera con métricas
+from app.domain import financial_engine
 
 # Blueprint del dashboard: aquí centralizo todo lo que muestra datos del portafolio.
 from app.market_service import get_simple_chart_data, get_portfolio_historical_value
@@ -140,23 +143,82 @@ def get_dashboard_data(user, timeframe='TODO'):
 @dashboard_bp.route('/')
 @login_required
 def dashboard():
-    # Obtengo las posiciones del usuario para mostrar su estado actual.
-    holdings = Holding.query.filter_by(user_id=current_user.id).all()
+    """
+    Dashboard principal con métricas enriquecidas (FASE 3).
     
-    # Últimos movimientos para el resumen rápido.
+    Muestra:
+    - Portfolio actual (valor total, cash, invertido)
+    - Métricas avanzadas (drawdown, volatilidad, Sharpe)
+    - Riesgo y asignación
+    - Detalles de holdings con P&L individual
+    """
+    # Obtener configuración
+    config = SimulationConfig.query.first() or SimulationConfig()
+    
+    # Generar datos enriquecidos del dashboard
+    try:
+        dashboard_data = financial_engine.generate_dashboard_data(current_user, config)
+        print(f"Dashboard data generated: {bool(dashboard_data)} keys: {list(dashboard_data.keys()) if dashboard_data else 'None'}")
+    except Exception as e:
+        print(f"Error generando dashboard data: {e}")
+        import traceback
+        traceback.print_exc()
+        dashboard_data = {}
+    
+    # Último movimiento
+    latest_transaction = Transaction.query.filter_by(user_id=current_user.id)\
+                                          .order_by(desc(Transaction.timestamp))\
+                                          .first()
+    
+    # Histórico reciente (últimas 5)
     transaction_history = Transaction.query.filter_by(user_id=current_user.id)\
                                            .order_by(desc(Transaction.timestamp))\
                                            .limit(5).all()
     
-    # Calcular datos iniciales para mostrar directamente
-    initial_data = get_dashboard_data(current_user, 'TODO')
+    # Data inicial para JavaScript (compatible con updateUI)
+    # Necesitamos crear la estructura que espera el JavaScript
+    from app.market_service import get_simple_chart_data
+    
+    # Crear datos iniciales en formato API
+    initial_api_data = {
+        'summary': {
+            'portfolio_value': dashboard_data.get('portfolio', {}).get('total_invested', 0),
+            'total_capital': dashboard_data.get('portfolio', {}).get('total_portfolio_value', current_user.capital),
+            'pnl': dashboard_data.get('metrics', {}).get('total_p_and_l', 0),
+            'pnl_pct': dashboard_data.get('metrics', {}).get('total_return_pct', 0)
+        },
+        'holdings_updates': {},
+        'chart_data': get_simple_chart_data(float(dashboard_data.get('portfolio', {}).get('total_portfolio_value', current_user.capital)))
+    }
+    
+    # Si hay holdings, agregar holdings_updates
+    if dashboard_data.get('holdings_detail'):
+        for holding in dashboard_data['holdings_detail']:
+            holding_id = f"holding_{holding['symbol']}"  # Crear ID único
+            initial_api_data['holdings_updates'][holding_id] = {
+                'current_price': holding['current_price'],
+                'total_value': holding['current_value'],
+                'gain': holding['p_and_l_absolute'],
+                'pct': holding['p_and_l_pct']
+            }
+    
+    # Data simple para compatibilidad
+    initial_data = {
+        'portfolio_value': dashboard_data.get('portfolio', {}).get('total_portfolio_value', 0),
+        'cash': dashboard_data.get('portfolio', {}).get('cash_available', 0),
+        'total_return_pct': dashboard_data.get('metrics', {}).get('total_return_pct', 0),
+        'has_data': bool(dashboard_data and dashboard_data.get('portfolio'))
+    }
     
     return render_template(
         'Dashboard/dashboard.html',
-        holdings=holdings,
+        dashboard_data=dashboard_data,
+        initial_api_data=initial_api_data,
+        initial_data=initial_data,
+        latest_transaction=latest_transaction,
         transaction_history=transaction_history,
         current_capital=current_user.capital,
-        initial_data=initial_data
+        config=config
     )
 
 # ==================================

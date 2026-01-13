@@ -48,6 +48,8 @@
       <i class="fas fa-bars"></i>
     </button>
     <div class="max-w-7xl mx-auto space-y-8">
+    
+
 
     <!-- SECCIÓN 1: Encabezado de Bienvenida -->
     <section class="flex flex-col md:flex-row md:items-center md:justify-between 
@@ -109,8 +111,103 @@
             </div>
         </div>
     </section>
+
+    <!-- SECCIÓN 3A: MÉTRICAS AVANZADAS (FASE 3) -->
+    {% if dashboard_data and dashboard_data.risk %}
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Riesgo del Portfolio -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Perfil de Riesgo</h3>
+                <i class="fas fa-shield-alt text-simvest-blue"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ dashboard_data.risk.risk_level|upper }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                {{ dashboard_data.risk.num_holdings }} activos | Score: {{ "%.0f"|format(dashboard_data.risk.overall_risk_score) }}%
+            </p>
+        </div>
+
+        <!-- Máximo Drawdown -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Max Drawdown</h3>
+                <i class="fas fa-arrow-down text-red-500"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ "%.2f"|format(dashboard_data.advanced_metrics.risk_metrics.max_drawdown_pct) }}%
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Caída máxima desde pico</p>
+        </div>
+
+        <!-- Volatilidad -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Volatilidad</h3>
+                <i class="fas fa-chart-area text-amber-500"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ "%.2f"|format(dashboard_data.advanced_metrics.risk_metrics.volatility_pct) }}%
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Desviación estándar</p>
+        </div>
+
+        <!-- Sharpe Ratio -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Sharpe Ratio</h3>
+                <i class="fas fa-star text-yellow-500"></i>
+            </div>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                {{ "%.2f"|format(dashboard_data.advanced_metrics.risk_metrics.sharpe_ratio) }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Riesgo/Retorno</p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 3B: HOLDINGS DETAIL (FASE 3) -->
+    <section class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Posiciones Activas</h2>
+        
+        {% if dashboard_data.holdings_detail %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Símbolo</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Cantidad</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Cost Base</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Precio Act.</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Valor Act.</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">P&L</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300">% Portfolio</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for holding in dashboard_data.holdings_detail %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{{ holding.symbol }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ "%.4f"|format(holding.quantity) }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ holding.cost_basis | currency }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ holding.current_price | currency }}</td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">{{ holding.current_value | currency }}</td>
+                        <td class="px-6 py-4 text-sm font-semibold {% if holding.p_and_l_absolute > 0 %}text-green-600{% elif holding.p_and_l_absolute < 0 %}text-red-600{% endif %}">
+                            {{ holding.p_and_l_absolute | currency }} ({{ "%.2f"|format(holding.p_and_l_pct) }}%)
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ "%.1f"|format(holding.weight_pct) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-gray-500 dark:text-gray-400 text-center py-8">No hay posiciones activas</p>
+        {% endif %}
+    </section>
+    {% endif %}
     
-    <!-- SECCIÓN 3: Gráfico de Evolución -->
+    <!-- SECCIÓN 4: Gráfico de Evolución -->
     <section class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700">
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -147,7 +244,8 @@
         </div>
     </section>
 
-    <!-- SECCIÓN 4: Historial y Guía -->
+    <!-- SECCIÓN 5: Historial y Guía -->
+
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- Historial Reciente -->
@@ -328,7 +426,7 @@
     let activeTimeframe = 'Todo'; // Estado inicial
 
     // Datos iniciales desde el servidor
-    const initialData = {{ initial_data | tojson }};
+    const initialData = {{ initial_api_data | tojson }};
 
     // Ruta de la API de datos (debe ser accesible globalmente si es necesario)
     const API_URL = "{{ url_for('dashboard.dashboard_data') }}";

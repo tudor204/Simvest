@@ -43,7 +43,7 @@ migrate.init_app(app, db)
 # 3. Importar modelos
 # =========================================================
 # Importar después de inicializar db para evitar referencias circulares
-from app.models import User, Holding, Transaction 
+from app.models import User, Holding, Transaction, SimulationConfig 
 
 # =========================================================
 # 4. Registrar blueprints

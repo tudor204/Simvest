@@ -308,7 +308,7 @@
     {% endif %}
 
 </div>
-{% endblock %}
+<script>
     // Agregamos un pequeño delay artificial o manejo de errores para suavidad
     document.addEventListener("DOMContentLoaded", function() {
         fetch("{{ url_for('profile.user_stats') }}") // Asegúrate que esta ruta exista en tu backend

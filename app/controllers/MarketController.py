@@ -12,7 +12,21 @@ from app.market_service import (
 from app.utils.utils import MARKET_UNIVERSE 
 
 # Modelos principales usados en operaciones del mercado
-from app.models import Holding, db, Transaction, User
+from app.models import Holding, db, Transaction, User, SimulationConfig
+
+# Motor de simulación financiera
+from app.domain import financial_engine
+from app.domain.financial_engine import (
+    InsufficientCapitalError,
+    InsufficientHoldingsError,
+    InvalidOperationError,
+    validate_buy_order,
+    validate_sell_order,
+    calculate_portfolio_from_transactions,
+    calculate_portfolio_metrics,
+    generate_extended_buy_feedback,
+    generate_extended_sell_feedback
+)
 
 from datetime import datetime
 import time
@@ -119,173 +133,256 @@ def load_asset_historical_data(symbol, period):
 @market_bp.route('/buy', methods=['POST'])
 @login_required
 def buy():
-    # Ruta que gestiona compras tanto por monto como por unidades.
+    """
+    Ruta de compra. Valida la orden mediante el motor de simulación,
+    ejecuta la transacción, y proporciona feedback educativo.
+    """
     symbol = request.form.get('symbol', '').upper()
-    
-    # Intento obtener el precio actual en vivo.
-    try:
-        asset_details = fetch_single_asset_details(symbol)
-    except Exception:
-        flash('Error al obtener la cotización actual. Compra cancelada.', 'danger')
-        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
-
-    # Validación básica del activo y del precio.
-    if not asset_details or asset_details['price'] <= 0:
-        flash(f'Activo {symbol} no disponible o sin precio válido.', 'danger')
-        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
-    
-    price_per_unit = asset_details['price']
-    asset_name = asset_details['name']
-    
-    # Aquí permito dos formas de compra: por unidades o por capital invertido.
-    quantity = 0.0
-    total_cost = 0.0
-    
     quantity_input = request.form.get('quantity')
     amount_to_buy_input = request.form.get('amount_to_buy')
     
+    # Step 1: Obtener configuración y detalles del precio
     try:
-        if amount_to_buy_input:
-            # Compra basada en capital disponible a invertir.
-            amount_to_buy = float(amount_to_buy_input)
-            if amount_to_buy <= 0:
-                raise ValueError("El monto debe ser positivo.")
-            
-            total_cost = amount_to_buy
-            quantity = amount_to_buy / price_per_unit
-        
-        elif quantity_input:
-            # Compra clásica por número de unidades.
-            quantity = float(quantity_input)
-            if quantity <= 0:
-                raise ValueError("La cantidad debe ser positiva.")
-
-            total_cost = quantity * price_per_unit
-        
-        else:
-            raise ValueError("Debes indicar la cantidad o el monto a invertir.")
-
-    except (TypeError, ValueError) as e:
-        flash(f'Entrada no válida: {e}', 'danger')
-        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
-
-    # Verifico que el usuario tenga capital suficiente.
-    if total_cost > current_user.capital:
-        flash(
-            f'Capital insuficiente. Necesitas ${total_cost:,.2f} y solo tienes ${current_user.capital:,.2f}.',
-            'danger'
+        config = SimulationConfig.query.first() or SimulationConfig(
+            initial_capital=10000.0,
+            commission_rate=0.0005
         )
+        
+        asset_details = fetch_single_asset_details(symbol)
+        if not asset_details or asset_details['price'] <= 0:
+            raise InvalidOperationError(
+                f"Activo {symbol} no disponible o sin precio válido"
+            )
+            
+    except Exception as e:
+        flash(f'Error al obtener datos: {str(e)}', 'danger')
         return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
     
-    # Busco si ya existe un holding para sumar cantidades y actualizar el precio promedio.
-    holding = Holding.query.filter_by(symbol=symbol, user_id=current_user.id).first()
-
-    if holding:
-        # Actualizo el precio promedio del holding si ya existía.
-        current_total_value = holding.quantity * holding.purchase_price
-        new_total_value = current_total_value + total_cost
-        new_quantity = holding.quantity + quantity
+    price_per_unit = asset_details['price']
+    asset_name = asset_details.get('name', symbol)
+    
+    # Step 2: Validar orden mediante engine
+    try:
+        quantity = float(quantity_input) if quantity_input else None
+        amount_to_buy = float(amount_to_buy_input) if amount_to_buy_input else None
         
-        holding.purchase_price = new_total_value / new_quantity
-        holding.quantity = new_quantity
-        holding.purchase_date = datetime.utcnow()
+        final_quantity, total_cost = validate_buy_order(
+            quantity=quantity,
+            amount_to_buy=amount_to_buy,
+            capital_available=current_user.capital,
+            price_per_unit=price_per_unit,
+            commission_rate=config.commission_rate,
+            min_trade_amount=config.min_trade_amount
+        )
         
-    else:
-        # Creo el holding desde cero si es la primera vez.
-        holding = Holding(
+    except (TypeError, ValueError) as e:
+        flash(f'Entrada inválida: {str(e)}', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+    
+    except (InsufficientCapitalError, InvalidOperationError) as e:
+        flash(f'❌ {str(e)}', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
+    
+    # Step 3: Crear transacción en BD
+    try:
+        # Calcular comisión
+        total_before_commission = final_quantity * price_per_unit
+        commission_amount = total_before_commission * config.commission_rate
+        
+        # Crear Transaction
+        new_transaction = Transaction(
             user_id=current_user.id,
             symbol=symbol,
-            name=asset_name,
-            quantity=quantity,
-            purchase_price=price_per_unit,
-            purchase_date=datetime.utcnow()
+            asset_name=asset_name,
+            type='BUY',
+            quantity=final_quantity,
+            price_per_unit=price_per_unit,
+            total_amount=total_before_commission,
+            commission_amount=commission_amount,
+            status='executed'
         )
-        db.session.add(holding)
         
-    # Descuento el capital invertido del usuario.
-    current_user.capital -= total_cost
-    
-    # Registro formal de la transacción.
-    new_transaction = Transaction(
-        user_id=current_user.id,
-        symbol=symbol,
-        type='BUY',
-        quantity=quantity,
-        price_per_unit=price_per_unit,
-        total_amount=total_cost
-    )
-    db.session.add(new_transaction)
-    
-    db.session.commit()
-    
-    flash(f'Compra exitosa: {quantity:,.4f} {symbol} por ${total_cost:,.2f}', 'success')
-    return redirect(url_for('dashboard.dashboard'))
+        # Actualizar capital del usuario
+        current_user.capital -= total_cost
+        
+        # Actualizar o crear holding (compatibilidad con vista existente)
+        holding = Holding.query.filter_by(symbol=symbol, user_id=current_user.id).first()
+        if holding:
+            # Recalcular precio promedio
+            current_total_value = holding.quantity * holding.purchase_price
+            new_total_value = current_total_value + total_before_commission
+            new_quantity = holding.quantity + final_quantity
+            holding.purchase_price = new_total_value / new_quantity
+            holding.quantity = new_quantity
+            holding.purchase_date = datetime.utcnow()
+        else:
+            holding = Holding(
+                user_id=current_user.id,
+                symbol=symbol,
+                name=asset_name,
+                quantity=final_quantity,
+                purchase_price=price_per_unit,
+                purchase_date=datetime.utcnow()
+            )
+            db.session.add(holding)
+        
+        db.session.add(new_transaction)
+        db.session.commit()
+        
+        # Step 4: Feedback educativo detallado
+        current_prices = {symbol: price_per_unit}
+        portfolio = financial_engine.calculate_portfolio_from_transactions(
+            current_user.transactions,
+            current_prices
+        )
+        portfolio_metrics = financial_engine.calculate_portfolio_metrics(
+            portfolio,
+            initial_capital=config.initial_capital
+        )
+        
+        feedback = financial_engine.generate_extended_buy_feedback(
+            symbol=symbol,
+            quantity=final_quantity,
+            price_per_unit=price_per_unit,
+            total_cost=total_cost,
+            commission_amount=commission_amount,
+            portfolio=portfolio,
+            portfolio_metrics=portfolio_metrics,
+            initial_capital=config.initial_capital
+        )
+        
+        # Mostrar feedback en múltiples líneas para máxima claridad
+        flash_msg = f"[COMPRA] {feedback['summary']}", 'info'
+        flash(f"[ASIGNACION] {feedback['allocation']}", 'warning' if 'ADVERTENCIA' in feedback['allocation'] else 'info')
+        flash(f"[RIESGO] {feedback['risk']}", 'warning' if feedback['risk'].startswith('Riesgo del portfolio: ALTO') else 'info')
+        flash(f"[SUGERENCIA] {feedback['suggestion']}", 'info')
+        
+        return redirect(url_for('dashboard.dashboard'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al procesar compra: {str(e)}', 'danger')
+        return redirect(url_for('market.asset_detail', symbol=symbol) or url_for('market.market'))
 
 
 @market_bp.route('/sell', methods=['POST'])
 @login_required
 def sell():
-    # Proceso de venta de un activo perteneciente al usuario.
+    """
+    Ruta de venta. Valida la orden mediante el motor de simulación,
+    ejecuta la transacción, y proporciona feedback educativo.
+    """
     holding_id = request.form.get('holding_id', type=int)
     quantity_to_sell = request.form.get('quantity_to_sell', type=float)
     
-    # Obtengo precios actuales de todos los activos monitoreados.
+    # Step 1: Validar entrada básica
+    if not holding_id or not quantity_to_sell:
+        flash('Entrada incompleta.', 'danger')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    # Step 2: Obtener configuración y holding
     try:
-        _, products_dict = fetch_live_market_data()
-    except Exception:
+        config = SimulationConfig.query.first() or SimulationConfig(
+            initial_capital=10000.0,
+            commission_rate=0.0005
+        )
+        
+        holding = Holding.query.filter_by(id=holding_id, user_id=current_user.id).first()
+        if not holding:
+            flash('Posición no encontrada.', 'danger')
+            return redirect(url_for('dashboard.dashboard'))
+        
+        # Obtener precio actual
+        asset_details = fetch_single_asset_details(holding.symbol)
+        if not asset_details or asset_details['price'] <= 0:
+            raise InvalidOperationError(
+                f"No se pudo obtener precio válido para {holding.symbol}"
+            )
+            
+    except Exception as e:
+        flash(f'Error al obtener datos: {str(e)}', 'danger')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    price_per_unit = asset_details['price']
+    
+    # Step 3: Validar orden mediante engine
+    try:
+        final_quantity, total_proceeds = validate_sell_order(
+            quantity_to_sell=quantity_to_sell,
+            quantity_available=holding.quantity,
+            price_per_unit=price_per_unit,
+            commission_rate=config.commission_rate,
+            min_trade_amount=config.min_trade_amount
+        )
+        
+    except (InsufficientHoldingsError, InvalidOperationError) as e:
+        flash(f'❌ {str(e)}', 'danger')
+        return redirect(url_for('dashboard.dashboard'))
+    
+    # Step 4: Crear transacción en BD
+    try:
+        # Calcular valores
+        total_before_commission = final_quantity * price_per_unit
+        commission_amount = total_before_commission * config.commission_rate
+        
+        # Crear Transaction
+        new_transaction = Transaction(
+            user_id=current_user.id,
+            symbol=holding.symbol,
+            asset_name=holding.name,
+            type='SELL',
+            quantity=final_quantity,
+            price_per_unit=price_per_unit,
+            total_amount=total_before_commission,
+            commission_amount=commission_amount,
+            status='executed'
+        )
+        
+        # Actualizar capital del usuario
+        current_user.capital += total_proceeds
+        
+        # Actualizar holding
+        holding.quantity -= final_quantity
+        
+        # Eliminar si se vacía (evitar posiciones fantasma)
+        if holding.quantity < 0.00001:
+            db.session.delete(holding)
+        
+        db.session.add(new_transaction)
+        db.session.commit()
+        
+        # Step 5: Feedback educativo detallado
+        current_prices = {holding.symbol: price_per_unit}
+        portfolio = financial_engine.calculate_portfolio_from_transactions(
+            current_user.transactions,
+            current_prices
+        )
+        portfolio_metrics = financial_engine.calculate_portfolio_metrics(
+            portfolio,
+            initial_capital=config.initial_capital
+        )
+        
+        feedback = financial_engine.generate_extended_sell_feedback(
+            symbol=holding.symbol,
+            quantity=final_quantity,
+            price_per_unit=price_per_unit,
+            proceeds=total_proceeds,
+            commission_amount=commission_amount,
+            p_and_l_data=portfolio_metrics,
+            portfolio=portfolio,
+            portfolio_metrics=portfolio_metrics,
+            initial_capital=config.initial_capital
+        )
+        
+        # Mostrar feedback en múltiples líneas
+        flash(f"[VENTA] {feedback['summary']}", 'info')
+        flash(f"[RESULTADO] {feedback['performance']}", 'success' if portfolio_metrics['p_and_l_by_asset'].get(holding.symbol, {}).get('absolute', 0) > 0 else 'warning')
+        flash(f"[ANALISIS] {feedback['insight']}", 'info')
+        flash(f"[SUGERENCIA] {feedback['suggestion']}", 'info')
+        
+        return redirect(url_for('dashboard.dashboard'))
+        
+    except Exception as e:
         db.session.rollback()
-        flash('Error al obtener la cotización actual. Venta cancelada.', 'danger')
+        flash(f'Error al procesar venta: {str(e)}', 'danger')
         return redirect(url_for('dashboard.dashboard'))
-
-    # Verifico que el usuario realmente tenga este holding.
-    holding = Holding.query.filter_by(id=holding_id, user_id=current_user.id).first()
-
-    if not holding:
-        flash('No se encontró la posición seleccionada.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
-    # Valido la cantidad a vender.
-    if not quantity_to_sell or quantity_to_sell <= 0:
-        flash('La cantidad a vender debe ser positiva.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
-    if quantity_to_sell > holding.quantity:
-        flash(f'Solo tienes {holding.quantity:,.4f} unidades para vender.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-
-    # Verifico que exista precio de venta disponible.
-    if holding.symbol not in products_dict or products_dict[holding.symbol]['price'] <= 0:
-        flash(f'No se pudo obtener un precio válido para {holding.symbol}.', 'danger')
-        return redirect(url_for('dashboard.dashboard'))
-        
-    current_price = products_dict[holding.symbol]['price']
-    
-    # Cálculo del dinero recibido por la venta.
-    total_proceeds = quantity_to_sell * current_price
-    
-    # Actualizo capital y cantidades del holding.
-    current_user.capital += total_proceeds
-    holding.quantity -= quantity_to_sell
-    
-    # Registro de la transacción SELL.
-    new_transaction = Transaction(
-        user_id=current_user.id,
-        symbol=holding.symbol,
-        type='SELL',
-        quantity=quantity_to_sell,
-        price_per_unit=current_price,
-        total_amount=total_proceeds
-    )
-    db.session.add(new_transaction)
-    
-    # Elimino el holding si ya quedó prácticamente vacío.
-    if holding.quantity < 0.00001:
-        db.session.delete(holding)
-    
-    db.session.commit()
-    
-    flash(
-        f'Venta realizada: {quantity_to_sell:,.4f} {holding.symbol} por ${total_proceeds:,.2f}', 
-        'success'
-    )
-    return redirect(url_for('dashboard.dashboard'))
