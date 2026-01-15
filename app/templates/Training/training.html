@@ -547,16 +547,6 @@
 
 <!-- Scripts JavaScript -->
 <script>
-function toggleSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const isHidden = sidebar.classList.contains('hidden');
-  if (isHidden) {
-    sidebar.classList.remove('hidden');
-  } else {
-    sidebar.classList.add('-translate-x-full');
-  }
-}
-
 function toggleFAQ(button) {
   const content = button.nextElementSibling;
   const icon = button.querySelector('i');
@@ -564,6 +554,7 @@ function toggleFAQ(button) {
   content.classList.toggle('hidden');
   icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
 }
+</script>
 </script>
 
     </div>
