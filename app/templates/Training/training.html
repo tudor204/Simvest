@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+{% block title %}Centro de Formación - Simvest{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 py-8">
+  <div class="max-w-6xl mx-auto space-y-8">
+
+      <!-- Encabezado Principal -->
+      <section class="bg-gradient-to-r from-simvest-blue to-simvest-darkblue text-white rounded-2xl shadow-lg p-8">
+        <h1 class="text-4xl font-extrabold mb-3">🎓 Centro de Formación</h1>
+        <p class="text-lg opacity-90">Todo lo que necesitas saber para invertir con confianza. Aprende conceptos, resuelve dudas y domina las estrategias de inversión.</p>
+      </section>
+
+      <!-- Tabla de Contenidos -->
+      <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-20 z-40">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">📑 Tabla de Contenidos</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <a href="#terminos" class="flex items-center p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
+            <i class="fas fa-book text-simvest-blue mr-3 text-lg"></i>
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Términos Clave</span>
+          </a>
+          <a href="#metodos" class="flex items-center p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition">
+            <i class="fas fa-chart-pie text-purple-600 mr-3 text-lg"></i>
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Métodos de Inversión</span>
+          </a>
+          <a href="#faq" class="flex items-center p-3 bg-green-50 dark:bg-green-900/30 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition">
+            <i class="fas fa-question-circle text-green-600 mr-3 text-lg"></i>
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">Preguntas Frecuentes</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 1: TÉRMINOS CLAVE DE INVERSIÓN -->
+      <section id="terminos" class="space-y-6">
+        <div class="flex items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">📚 Términos Clave de Inversión</h2>
+          <div class="ml-4 h-1 flex-1 bg-gradient-to-r from-simvest-blue to-transparent rounded"></div>
+        </div>
+
+        <!-- Tarjetas de Términos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Acción -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-simvest-blue hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-simvest-blue dark:text-blue-300 mb-3">📈 Acción</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Una acción representa una pequeña parte de propiedad en una empresa. Al comprar acciones, te conviertes en accionista y puedes obtener ganancias cuando la empresa crece.
+            </p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Ejemplo:</strong> Si una empresa tiene 100 acciones y compras 5, posees el 5% de esa empresa.
+            </div>
+          </div>
+
+          <!-- Dividendo -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-green-600 dark:text-green-300 mb-3">💰 Dividendo</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Pago periódico que hacen las empresas a sus accionistas como parte de las ganancias. No todas las empresas pagan dividendos.
+            </p>
+            <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Ejemplo:</strong> Si posees 100 acciones y pagan $0.50 por acción, recibes $50 en dividendos.
+            </div>
+          </div>
+
+          <!-- Volatilidad -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-orange-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-orange-600 dark:text-orange-300 mb-3">⚡ Volatilidad</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Medida de cuánto cambia el precio de una acción. Alta volatilidad significa cambios grandes y rápidos; baja volatilidad significa cambios menores.
+            </p>
+            <div class="bg-orange-50 dark:bg-orange-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Implicación:</strong> Mayor volatilidad = mayor riesgo pero también mayor potencial de ganancia.
+            </div>
+          </div>
+
+          <!-- Portafolio -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-purple-600 dark:text-purple-300 mb-3">🎯 Portafolio</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Conjunto de todas tus inversiones. Incluye las acciones que posees, su valor actual y la diversificación entre diferentes activos.
+            </p>
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Objetivo:</strong> Crear un portafolio diversificado para reducir riesgo.
+            </div>
+          </div>
+
+          <!-- P&L (Pérdida y Ganancia) -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-red-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-red-600 dark:text-red-300 mb-3">📊 P&L (Pérdida y Ganancia)</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Estado que muestra si has ganado o perdido dinero en tus inversiones. Se calcula como el valor actual menos el dinero invertido.
+            </p>
+            <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Cálculo:</strong> P&L = (Precio Actual - Precio de Compra) × Cantidad de Acciones
+            </div>
+          </div>
+
+          <!-- Índice Bursátil -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-blue-600 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-blue-600 dark:text-blue-300 mb-3">📈 Índice Bursátil</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Indicador que mide el desempeño general del mercado. Combina el precio de múltiples acciones para dar una visión del mercado.
+            </p>
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Ejemplos:</strong> S&P 500, Nasdaq, Dow Jones en EE.UU.
+            </div>
+          </div>
+
+          <!-- Orden Limit -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-cyan-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-cyan-600 dark:text-cyan-300 mb-3">🎯 Orden Limit</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Instrucción para comprar o vender un activo solo a un precio específico o mejor. Es útil para garantizar que no pagas más de lo que deseas.
+            </p>
+            <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Ejemplo:</strong> "Comprar 10 acciones solo si bajan a $50 o menos".
+            </div>
+          </div>
+
+          <!-- Diversificación -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-l-4 border-pink-500 hover:shadow-xl transition">
+            <h3 class="text-xl font-bold text-pink-600 dark:text-pink-300 mb-3">🌍 Diversificación</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Estrategia de distribuir tu dinero entre diferentes activos y sectores. Reduce el riesgo de perder todo si un sector tiene problemas.
+            </p>
+            <div class="bg-pink-50 dark:bg-pink-900/20 p-3 rounded text-sm text-gray-700 dark:text-gray-300">
+              <strong>Regla de Oro:</strong> No inviertas todo tu dinero en una sola acción o sector.
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECCIÓN 2: MÉTODOS DE INVERSIÓN -->
+      <section id="metodos" class="space-y-6 mt-12">
+        <div class="flex items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">🎯 Métodos de Inversión</h2>
+          <div class="ml-4 h-1 flex-1 bg-gradient-to-r from-purple-500 to-transparent rounded"></div>
+        </div>
+
+        <p class="text-gray-700 dark:text-gray-300 mb-6">
+          Existen diferentes estrategias de inversión. Elige la que mejor se adapte a tu perfil de riesgo y objetivos financieros.
+        </p>
+
+        <!-- Comparativa de Métodos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Compra a Largo Plazo (Buy & Hold) -->
+          <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-900/10 rounded-xl shadow-lg p-6 border border-green-200 dark:border-green-700">
+            <div class="flex items-center mb-4">
+              <div class="bg-green-500 text-white rounded-full p-3 mr-3">
+                <i class="fas fa-seedling text-lg"></i>
+              </div>
+              <h3 class="text-2xl font-bold text-green-700 dark:text-green-300">Compra a Largo Plazo</h3>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">¿Qué es?</h4>
+                <p class="text-gray-700 dark:text-gray-300 text-sm">
+                  Comprar acciones de empresas sólidas y mantenerlas durante años. Se basa en el crecimiento a largo plazo del mercado.
+                </p>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">✅ Ventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✓ Menor estrés y tiempo de monitoreo</li>
+                  <li>✓ Aprovecha el crecimiento compuesto</li>
+                  <li>✓ Menores costos de transacción</li>
+                  <li>✓ Beneficiarse de dividendos</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">⚠️ Desventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✗ Requiere paciencia (años)</li>
+                  <li>✗ Expuesto a volatilidad del mercado</li>
+                  <li>✗ Ganancia lenta inicialmente</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-700/50 p-3 rounded">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Para quién:</strong> Inversores pacientes, principiantes, planes de jubilación.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trading de Swing -->
+          <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 rounded-xl shadow-lg p-6 border border-blue-200 dark:border-blue-700">
+            <div class="flex items-center mb-4">
+              <div class="bg-blue-500 text-white rounded-full p-3 mr-3">
+                <i class="fas fa-wave-square text-lg"></i>
+              </div>
+              <h3 class="text-2xl font-bold text-blue-700 dark:text-blue-300">Trading de Swing</h3>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">¿Qué es?</h4>
+                <p class="text-gray-700 dark:text-gray-300 text-sm">
+                  Comprar y vender acciones en períodos de días a semanas, aprovechando fluctuaciones del precio.
+                </p>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">✅ Ventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✓ Ganancias más rápidas</li>
+                  <li>✓ Flexibilidad en el horizonte</li>
+                  <li>✓ Menos exposición a riesgo largo plazo</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">⚠️ Desventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✗ Requiere análisis técnico</li>
+                  <li>✗ Altos costos de transacción</li>
+                  <li>✗ Mayor riesgo y estrés</li>
+                  <li>✗ Necesita monitoreo constante</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-700/50 p-3 rounded">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Para quién:</strong> Inversores activos, traders experimentados.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Value Investing -->
+          <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-900/10 rounded-xl shadow-lg p-6 border border-purple-200 dark:border-purple-700">
+            <div class="flex items-center mb-4">
+              <div class="bg-purple-500 text-white rounded-full p-3 mr-3">
+                <i class="fas fa-magnifying-glass text-lg"></i>
+              </div>
+              <h3 class="text-2xl font-bold text-purple-700 dark:text-purple-300">Value Investing</h3>
+            </div>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">¿Qué es?</h4>
+                <p class="text-gray-700 dark:text-gray-300 text-sm">
+                  Buscar acciones subestimadas (baratas) con potencial de crecimiento. Se compran cuando están "en oferta".
+                </p>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">✅ Ventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✓ Compras a precio de ganga</li>
+                  <li>✓ Alto potencial de ganancia</li>
+                  <li>✓ Análisis fundamental profundo</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">⚠️ Desventajas</h4>
+                <ul class="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+                  <li>✗ Requiere investigación profunda</li>
+                  <li>✗ Necesita experiencia en análisis</li>
+                  <li>✗ Puede tardar en subir el precio</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-700/50 p-3 rounded">
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  <strong>Para quién:</strong> Inversores analíticos, con experiencia.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Tabla Comparativa -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 mt-8">
+          <div class="p-6 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">📊 Comparativa Detallada</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-100 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Aspecto</th>
+                  <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Largo Plazo</th>
+                  <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Swing Trading</th>
+                  <th class="px-6 py-3 text-left font-semibold text-gray-900 dark:text-white">Value Investing</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Tiempo de Inversión</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Años a décadas</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Días a semanas</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Meses a años</td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-gray-50 dark:bg-gray-800/50">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Nivel de Riesgo</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Bajo a Medio</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Alto</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Medio</td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Monitoreo Requerido</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Bajo</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Muy alto</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Medio-Alto</td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 bg-gray-50 dark:bg-gray-800/50">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Costos de Transacción</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Muy bajo</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Alto</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Bajo-Medio</td>
+                </tr>
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Experiencia Requerida</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Principiante</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Avanzada</td>
+                  <td class="px-6 py-4 text-gray-700 dark:text-gray-300">Media-Alta</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN 3: PREGUNTAS FRECUENTES -->
+      <section id="faq" class="space-y-6 mt-12">
+        <div class="flex items-center mb-6">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">❓ Preguntas Frecuentes</h2>
+          <div class="ml-4 h-1 flex-1 bg-gradient-to-r from-green-500 to-transparent rounded"></div>
+        </div>
+
+        <!-- Acordeón de FAQ -->
+        <div class="space-y-4">
+
+          <!-- FAQ 1 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Cuánto dinero necesito para empezar a invertir?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <p class="mb-3">
+                No necesitas mucho dinero para empezar. Muchas plataformas permiten:
+              </p>
+              <ul class="space-y-2 ml-4">
+                <li>• Compra de acciones fraccionadas (partes de acciones)</li>
+                <li>• Depósitos iniciales de $50-$100</li>
+                <li>• Comisiones bajas o sin comisiones</li>
+              </ul>
+              <p class="mt-3 text-sm bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                <strong>Consejo:</strong> Comienza con lo que puedas permitirte perder sin afectar tus finanzas personales.
+              </p>
+            </div>
+          </div>
+
+          <!-- FAQ 2 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Qué son los fondos indexados (Index Funds)?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <p class="mb-3">
+                Los fondos indexados son carteras que replican el comportamiento de un índice del mercado (como el S&P 500).
+              </p>
+              <ul class="space-y-2 ml-4">
+                <li>• <strong>Diversificación instantánea:</strong> Tu dinero se distribuye entre cientos de empresas</li>
+                <li>• <strong>Bajo costo:</strong> Comisiones muy bajas</li>
+                <li>• <strong>Rendimiento consistente:</strong> Siguen el promedio del mercado</li>
+              </ul>
+              <p class="mt-3 text-sm bg-green-50 dark:bg-green-900/20 p-3 rounded">
+                <strong>Ideal para:</strong> Principiantes que quieren diversificación automática.
+              </p>
+            </div>
+          </div>
+
+          <!-- FAQ 3 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Cuál es la diferencia entre acciones y bonos?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-2">📈 Acciones</h4>
+                  <ul class="space-y-1 text-sm">
+                    <li>• Propiedad en empresa</li>
+                    <li>• Mayor potencial de ganancia</li>
+                    <li>• Mayor volatilidad/riesgo</li>
+                    <li>• Rendimiento variable</li>
+                  </ul>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">📊 Bonos</h4>
+                  <ul class="space-y-1 text-sm">
+                    <li>• Préstamo a empresa/gobierno</li>
+                    <li>• Ganancia predecible</li>
+                    <li>• Menor volatilidad/riesgo</li>
+                    <li>• Intereses fijos</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 4 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Cómo puedo reducir el riesgo de mis inversiones?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <p class="mb-3">Existen varias estrategias de reducción de riesgo:</p>
+              <ul class="space-y-2 ml-4">
+                <li><strong>1. Diversificación:</strong> Invierte en diferentes sectores y empresas</li>
+                <li><strong>2. Horizonte largo plazo:</strong> Minimiza el impacto de volatilidad corto plazo</li>
+                <li><strong>3. Dollar-Cost Averaging:</strong> Invierte pequeños montos regularmente</li>
+                <li><strong>4. Stop-Loss:</strong> Establece límites de pérdida automáticos</li>
+                <li><strong>5. Asignación de activos:</strong> Mezcla acciones, bonos e instrumentos conservadores</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- FAQ 5 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Qué es el "timing del mercado" y por qué es difícil?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <p class="mb-3">
+                El "timing del mercado" es intentar comprar en el punto más bajo y vender en el más alto. Es prácticamente imposible porque:
+              </p>
+              <ul class="space-y-2 ml-4 mb-3">
+                <li>✗ Nadie puede predecir el futuro del mercado</li>
+                <li>✗ Los movimientos son rápidos e impredecibles</li>
+                <li>✗ Incluso profesionales fallan constantemente</li>
+              </ul>
+              <p class="text-sm bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded">
+                <strong>Mejor estrategia:</strong> Enfócate en el "timing en el mercado" (invertir regularmente) en lugar de "timing del mercado".
+              </p>
+            </div>
+          </div>
+
+          <!-- FAQ 6 -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <button class="faq-toggle w-full p-6 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-gray-700/50 transition" onclick="toggleFAQ(this)">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-left">¿Cómo evaluar si una acción es buena inversión?</h3>
+              <i class="fas fa-chevron-down text-simvest-blue transition-transform duration-300"></i>
+            </button>
+            <div class="faq-content hidden px-6 pb-6 text-gray-700 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700">
+              <p class="mb-3">Algunos indicadores clave a considerar:</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                  <p class="font-semibold text-gray-900 dark:text-white mb-2">📊 Ratio P/E</p>
+                  <p class="text-sm">Compara el precio con ganancias. Bajo = puede estar barata.</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                  <p class="font-semibold text-gray-900 dark:text-white mb-2">📈 Crecimiento</p>
+                  <p class="text-sm">Revisa si la empresa crece año tras año.</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                  <p class="font-semibold text-gray-900 dark:text-white mb-2">💰 Flujo de Caja</p>
+                  <p class="text-sm">¿La empresa genera dinero real?</p>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded">
+                  <p class="font-semibold text-gray-900 dark:text-white mb-2">👥 Liderazgo</p>
+                  <p class="text-sm">¿Tiene directivos confiables y experimentados?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Sección de Consejos Finales -->
+      <section class="bg-gradient-to-r from-simvest-blue/10 to-purple-500/10 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl shadow-lg p-8 border border-simvest-blue/20 dark:border-blue-700/20 mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">💡 Consejos para Inversores Principiantes</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="flex gap-4">
+            <div class="text-3xl">🎯</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">Define tus Objetivos</h3>
+              <p class="text-gray-700 dark:text-gray-300">¿Inviertes para jubilarte, comprar casa, o generar ingresos?</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-3xl">⏰</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">Piensa a Largo Plazo</h3>
+              <p class="text-gray-700 dark:text-gray-300">Los mejores resultados se ven en 5+ años.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-3xl">📚</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">Edúcate Continuamente</h3>
+              <p class="text-gray-700 dark:text-gray-300">El mercado evoluciona; mantente actualizado.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-3xl">💪</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">No Emociones</h3>
+              <p class="text-gray-700 dark:text-gray-300">Evita decisiones impulsivas basadas en miedo o euforia.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-3xl">🤝</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">Busca Asesoramiento</h3>
+              <p class="text-gray-700 dark:text-gray-300">No dudes en consultar a asesores financieros profesionales.</p>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-3xl">🛡️</div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white mb-2">Diversifica Siempre</h3>
+              <p class="text-gray-700 dark:text-gray-300">No pongas todos los huevos en una sola canasta.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Botón de Llamada a la Acción -->
+      <section class="text-center py-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">¿Listo para comenzar?</h2>
+        <p class="text-lg text-gray-700 dark:text-gray-300 mb-8">Ahora que tienes los conocimientos, ve al mercado y empieza a invertir.</p>
+        <a href="{{ url_for('market.market') }}" class="inline-block bg-gradient-to-r from-simvest-blue to-simvest-darkblue hover:shadow-lg text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105">
+          <i class="fas fa-chart-line mr-2"></i>Ir al Mercado
+        </a>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- Scripts JavaScript -->
+<script>
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const isHidden = sidebar.classList.contains('hidden');
+  if (isHidden) {
+    sidebar.classList.remove('hidden');
+  } else {
+    sidebar.classList.add('-translate-x-full');
+  }
+}
+
+function toggleFAQ(button) {
+  const content = button.nextElementSibling;
+  const icon = button.querySelector('i');
+  
+  content.classList.toggle('hidden');
+  icon.style.transform = content.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+</script>
+
+    </div>
+  </div>
+{% endblock %}

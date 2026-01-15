@@ -2,52 +2,8 @@
 {% block title %}Dashboard - Simvest{% endblock %}
 
 {% block content %}
-<div class="flex min-h-screen bg-gray-50 dark:bg-gray-900">
-  <!-- Sidebar -->
-  <aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 block transition-all duration-300">
-    <div class="p-6">
-      <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Panel de Control</h2>
-      <nav class="space-y-2">
-        <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium text-simvest-blue bg-blue-50 dark:bg-blue-900/50 rounded-lg">
-          <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
-        </a>
-        <a href="{{ url_for('market.market') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <i class="fas fa-chart-line mr-3"></i> Mercado
-        </a>
-        <a href="{{ url_for('dashboard.history') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <i class="fas fa-history mr-3"></i> Historial
-        </a>
-        <a href="{{ url_for('profile.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
-          <i class="fas fa-user mr-3"></i> Perfil
-        </a>
-      </nav>
-    </div>
-    <div class="p-6 border-t border-gray-200 dark:border-gray-700">
-      <h3 class="text-sm font-semibold text-gray-800 dark:text-white mb-3">Métricas Rápidas</h3>
-      <div class="space-y-3">
-        <div class="flex justify-between">
-          <span class="text-sm text-gray-800 dark:text-gray-400">Capital</span>
-          <span class="text-sm font-medium text-green-600">{{ current_capital | currency }}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-sm text-gray-800 dark:text-gray-400">Portafolio</span>
-          <span class="text-sm font-medium text-blue-600" id="sidebar-portfolio">$0.00</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-sm text-gray-800 dark:text-gray-400">P&L</span>
-          <span class="text-sm font-medium" id="sidebar-pnl">--</span>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-8">
-    <!-- Toggle Sidebar Button -->
-    <button onclick="toggleSidebar()" class="lg:hidden fixed top-20 left-4 z-50 bg-blue-600 text-white p-2 rounded-lg shadow-lg">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="max-w-7xl mx-auto space-y-8">
+<div class="bg-gray-50 dark:bg-gray-900 min-h-screen px-6 py-8">
+  <div class="max-w-7xl mx-auto space-y-8">
     
 
 
@@ -293,7 +249,7 @@
             <p class="text-gray-700 dark:text-gray-300 mb-4">
                 ¿Eres nuevo? Aprende a usar la plataforma, a comprar acciones y a interpretar tu portafolio.
             </p>
-            <a href="#" class="bg-simvest-blue hover:bg-simvest-darkblue text-white font-semibold py-2 px-4 rounded-lg transition duration-150 block text-center">
+            <a href="{{ url_for('training.training') }}" class="bg-simvest-blue hover:bg-simvest-darkblue text-white font-semibold py-2 px-4 rounded-lg transition duration-150 block text-center">
                 Aprender Ahora
             </a>
         </div>
@@ -691,9 +647,8 @@
     // Función para toggle del sidebar
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('hidden');
+        // No necesaria, ya está en base.html
     }
 </script>
-  </main>
 </div>
 {% endblock %}

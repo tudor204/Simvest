@@ -1,0 +1,26 @@
+<!-- Sidebar Compartido -->
+<aside id="sidebar" class="w-64 bg-white dark:bg-gray-800 shadow-lg border-r border-gray-200 dark:border-gray-700 fixed left-0 top-20 h-[calc(100vh-5rem)] overflow-y-auto z-40 transition-transform duration-300 lg:translate-x-0 -translate-x-full">
+  <div class="p-6">
+    <h2 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">Panel de Control</h2>
+    <nav class="space-y-2">
+      <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition {% if request.endpoint == 'dashboard.dashboard' %}text-simvest-blue bg-blue-50 dark:bg-blue-900/50{% endif %}">
+        <i class="fas fa-tachometer-alt mr-3"></i> Dashboard
+      </a>
+      <a href="{{ url_for('market.market') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition {% if request.endpoint == 'market.market' %}text-simvest-blue bg-blue-50 dark:bg-blue-900/50{% endif %}">
+        <i class="fas fa-chart-line mr-3"></i> Mercado
+      </a>
+      <a href="{{ url_for('dashboard.history') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition {% if request.endpoint == 'dashboard.history' %}text-simvest-blue bg-blue-50 dark:bg-blue-900/50{% endif %}">
+        <i class="fas fa-history mr-3"></i> Historial
+      </a>
+      <a href="{{ url_for('training.training') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition {% if request.endpoint == 'training.training' %}text-simvest-blue bg-blue-50 dark:bg-blue-900/50{% endif %}">
+        <i class="fas fa-graduation-cap mr-3"></i> Formación
+      </a>
+      <a href="{{ url_for('profile.profile') }}" class="flex items-center px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition {% if request.endpoint == 'profile.profile' %}text-simvest-blue bg-blue-50 dark:bg-blue-900/50{% endif %}">
+        <i class="fas fa-user mr-3"></i> Perfil
+      </a>
+    </nav>
+  </div>
+</aside>
+
+<!-- Overlay para cerrar sidebar en móviles -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 lg:hidden hidden" onclick="toggleSidebar()"></div>

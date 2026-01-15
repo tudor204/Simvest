@@ -63,6 +63,8 @@ app.register_blueprint(admin_bp)
 from app.controllers.DashboardController import dashboard_bp
 app.register_blueprint(dashboard_bp)
 
+from app.controllers.TrainingController import training_bp
+app.register_blueprint(training_bp)
 
 from app.controllers import IndexController, RegisterController, LoginController
 

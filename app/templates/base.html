@@ -48,6 +48,30 @@
       display: flex;
       flex-direction: column;
     }
+    
+    /* Sidebar fixed - solo se aplica en screens grandes */
+    @media (min-width: 1024px) {
+      body.with-sidebar {
+        padding-left: 16rem; /* 64 * 0.25 = 16rem = 256px */
+      }
+    }
+    
+    /* Móviles */
+    @media (max-width: 1023px) {
+      #sidebar {
+        display: block !important;
+      }
+      #sidebar.-translate-x-full {
+        transform: translateX(-100%);
+      }
+      #sidebar.show-mobile {
+        transform: translateX(0);
+      }
+      #sidebar-overlay.show-overlay {
+        display: block !important;
+      }
+    }
+    
     main { flex: 1; }
     
     /* Animación suave para el dropdown */
@@ -59,11 +83,21 @@
   </style>
 </head>
 
-<body class="font-['Inter'] text-simvest-gray bg-simvest-bg dark:bg-simvest-darkbg dark:text-gray-100 transition-colors duration-300">
+<body class="font-['Inter'] text-simvest-gray bg-simvest-bg dark:bg-simvest-darkbg dark:text-gray-100 transition-colors duration-300 with-sidebar">
+
+  {% if current_user.is_authenticated %}
+    {% include 'components/sidebar.html' %}
+  {% endif %}
 
   <header class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm fixed w-full top-0 z-50 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
     <div class="container mx-auto flex justify-between items-center px-6 py-3">
       
+      {% if current_user.is_authenticated %}
+      <button onclick="toggleSidebar()" class="lg:hidden mr-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+        <i class="fas fa-bars text-xl text-gray-600 dark:text-gray-300"></i>
+      </button>
+      {% endif %}
+
       <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center gap-2 group">
         <div class="w-8 h-8 bg-simvest-blue text-white flex items-center justify-center rounded-lg shadow-lg group-hover:rotate-12 transition-transform">
             <i class="fa-solid fa-chart-line"></i>
@@ -181,7 +215,7 @@
     </div>
   </div>
 
-  <main data-aos="fade-up" data-aos-delay="50" class="container mx-auto px-6 py-8">
+  <main data-aos="fade-up" data-aos-delay="50" class="flex-1">
     {% block content %}{% endblock %}
   </main>
 
@@ -220,6 +254,19 @@
         const menu = document.getElementById('user-menu');
         if (button && !button.contains(event.target) && !menu.contains(event.target)) {
             menu.classList.add('hidden-menu');
+        }
+    }
+
+    // 🟢 Toggle del Sidebar en móviles
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (sidebar) {
+            sidebar.classList.toggle('show-mobile');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        if (overlay) {
+            overlay.classList.toggle('show-overlay');
         }
     }
   </script>
