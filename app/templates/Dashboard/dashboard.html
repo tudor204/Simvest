@@ -342,7 +342,7 @@
     <!-- 2. Contenedor de Scroll y Posicionamiento -->
     <div class="fixed inset-0 z-10 overflow-y-auto">
         <!-- Flexbox para centrar contenido vertical y horizontalmente -->
-        <div class="flex min-h-screen items-center justify-center p-4"></div>
+        <div class="flex min-h-screen items-center justify-center p-4">
             
             <!-- 3. La Tarjeta del Modal -->
             <div class="relative transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 text-left shadow-2xl transition-all sm:my-8 w-full max-w-5xl mx-4">
@@ -549,11 +549,16 @@
         elTotal.classList.remove('hidden');
         
         // Actualizar sidebar
-        document.getElementById('sidebar-portfolio').innerText = currencyFmt.format(data.summary.portfolio_value);
+        const sidebarPortfolio = document.getElementById('sidebar-portfolio');
+        if (sidebarPortfolio) {
+            sidebarPortfolio.innerText = currencyFmt.format(data.summary.portfolio_value);
+        }
         const sidebarPnl = document.getElementById('sidebar-pnl');
-        const pnlInfo = formatPnl(data.summary.pnl_pct);
-        sidebarPnl.innerText = pnlInfo.text;
-        sidebarPnl.className = `text-sm font-medium ${pnlInfo.colorClass}`;
+        if (sidebarPnl) {
+            const pnlInfo = formatPnl(data.summary.pnl_pct);
+            sidebarPnl.innerText = pnlInfo.text;
+            sidebarPnl.className = `text-sm font-medium ${pnlInfo.colorClass}`;
+        }
         
         const elPnl = document.getElementById('val-pnl-pct');
         const pnlInfo2 = formatPnl(data.summary.pnl_pct);
