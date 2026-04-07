@@ -90,11 +90,11 @@ class Holding(db.Model):
 
 class Transaction(db.Model):
     """
-    Representa un registro HISTÓRICO e INMUTABLE de una compra o venta.
+    Representa un registro histórico e INMUTABLE de una compra o venta.
     Esencial para el historial del usuario y el cálculo de P&L.
     
     Todos los campos relacionados con la ejecución (precio, comisión, etc.)
-    son snapshots en el momento de la transacción → determinista y auditable.
+    son snapshots en el momento de la transacción determinista y auditable.
     """
     __tablename__ = 'transactions'
 
