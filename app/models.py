@@ -117,7 +117,7 @@ class Transaction(db.Model):
     # Comisiones y costos
     commission_amount = db.Column(db.Float, default=0.0)  # Total comisión pagada
     
-    # Timestamp y estado
+    # Timestamp y estado de acción
     timestamp = db.Column(db.DateTime, index=True, default=func.current_timestamp())
     status = db.Column(db.String(20), default='executed')  # 'executed', 'pending', 'cancelled'
 
