@@ -62,7 +62,7 @@ def fetch_single_asset_details(symbol):
     try:
         ticker = yf.Ticker(symbol)
         
-        # Obtenemos precio y cambio con la función ya existente (pero el historial se ignora)
+        # Obtenemos precio y cambio con la función ya existente 
         price, _, _ = get_asset_price_and_change(ticker, symbol)
         
         # Obtenemos el nombre para la transacción

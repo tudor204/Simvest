@@ -970,7 +970,7 @@ def generate_dashboard_data(
     """
     from app.models import SimulationConfig
     
-    # Obtener precios actuales (en real, sería desde yfinance)
+    # Obtener precios actuales (en real, sería desde brooker )
     current_prices = {h.symbol: h.purchase_price for h in user.holdings}
     
     # Calcular portfolio
